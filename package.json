@@ -1,0 +1,29 @@
+{
+  "name": "mcp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "format": "npx @biomejs/biome check --write",
+    "dev": "npx tsx src/web.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^14.1.1",
+    "@modelcontextprotocol/sdk": "^1.15.1",
+    "cors": "^2.8.5",
+    "dedent": "^1.6.0",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "ky": "^1.8.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.14",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
