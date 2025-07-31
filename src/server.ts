@@ -1,17 +1,26 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { register as registerJsCmaClientResource } from "./tools/js_cma_client/resource";
-import { register as registerJsCmaClientResourceMethod } from "./tools/js_cma_client/resource_method";
-import { register as registerJsCmaClientResources } from "./tools/js_cma_client/resources";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { register as registerCmaJsClientResource } from "./tools/cma_js_client/resource/index.js";
+import { register as registerCmaJsClientResourceAction } from "./tools/cma_js_client/resource_action/index.js";
+import { register as registerCmaJsClientResourceActionMethod } from "./tools/cma_js_client/resource_action_method/index.js";
+import { register as registerCmaJsClientResourceActionMethodExecute } from "./tools/cma_js_client/resource_action_method_execute/index.js";
+import { register as registerCmaJsClientResources } from "./tools/cma_js_client/resources/index.js";
+import { register as registerCmaJsClientUsageRules } from "./tools/cma_js_client/usage_rules/index.js";
 
-export function createServer() {
-  const server = new McpServer({
-    name: "datocms-docs",
-    version: "1.0.0"
-  });
+export function createServer(apiToken: string | undefined) {
+	const server = new McpServer({
+		name: "datocms-docs",
+		version: "1.0.0",
+	});
 
-  registerJsCmaClientResources(server);
-  registerJsCmaClientResource(server);
-  registerJsCmaClientResourceMethod(server);
+	registerCmaJsClientUsageRules(server);
+	registerCmaJsClientResources(server);
+	registerCmaJsClientResource(server);
+	registerCmaJsClientResourceAction(server);
+	registerCmaJsClientResourceActionMethod(server);
 
-  return server;
+	if (apiToken) {
+		registerCmaJsClientResourceActionMethodExecute(server, apiToken);
+	}
+
+	return server;
 }
