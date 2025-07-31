@@ -3,7 +3,7 @@
   "version": "1.0.4",
   "main": "dist/src/index.js",
   "type": "module",
-  "bin": "./bin/mcp-stdio",
+  "bin": "./bin/stdio",
   "scripts": {
     "format": "npx @biomejs/biome check --write --unsafe",
     "dev": "npx tsx src/web.ts",
