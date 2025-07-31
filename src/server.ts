@@ -8,7 +8,7 @@ import { register as registerCmaJsClientUsageRules } from "./tools/cma_js_client
 
 export function createServer(apiToken: string | undefined) {
 	const server = new McpServer({
-		name: "datocms-docs",
+		name: "datocms",
 		version: "1.0.0",
 	});
 

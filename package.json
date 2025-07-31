@@ -6,12 +6,10 @@
   "bin": "./bin/stdio",
   "scripts": {
     "format": "npx @biomejs/biome check --write --unsafe",
-    "dev": "npx tsx src/web.ts",
-    "stdio": "npx tsx src/stdio.ts",
     "build": "npx rimraf dist && tsc",
     "prepublish": "npm run build",
     "test": "echo 1",
-    "start": "npm run build && node ./dist/web.js"
+    "start": "npm run build && ./bin/stdio"
   },
   "author": "Stefano Verna (s.verna@datocms.com)",
   "license": "ISC",
