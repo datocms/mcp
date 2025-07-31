@@ -12,7 +12,7 @@
     "start": "npm run build && ./bin/stdio"
   },
   "author": "Stefano Verna (s.verna@datocms.com)",
-  "license": "ISC",
+  "license": "MIT",
   "description": "Model Context Protocol server for DatoCMS",
   "repository": {
     "type": "git",
