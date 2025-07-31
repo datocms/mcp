@@ -106,6 +106,20 @@ export function register(server: McpServer) {
 
 					---
 
+					JQSELECTOR USAGE
+
+					The \`jqSelector\` parameter filters and transforms API responses using jq syntax:
+
+					Quoting: Use double quotes for strings/fields: \`.data[0].attributes["title"]\`. Escape quotes in literals: \`"Title: \"" + .title + "\""\`
+
+					\`\`\`jq
+					.data[0].attributes.title                           # Single field
+					.data | map(.attributes.title)                      # All titles
+					.data | map(select(.attributes.title | test("auto"; "i")))  # Regex filter (case-insensitive)
+					\`\`\`
+
+					---
+
 					ERROR MANAGEMENT
 
 					The client can throw \`ApiError\` for non 2xx HTTP responses, and \`TimeoutError\`, here are the types:
