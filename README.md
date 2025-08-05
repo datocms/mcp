@@ -67,20 +67,21 @@ Follow the MCP install [guide](https://modelcontextprotocol.io/quickstart/user),
 
 #### Click the button to install:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](cursor://anysphere.cursor-deeplink/mcp/install?name=datocms&config=eyJjb21tYW5kIjoibnB4IC15IEBkYXRvY21zL21jcEBsYXRlc3QiLCJlbnYiOnsiREFUT0NNU19BUElfVE9LRU4iOiIifX0%3D)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=DatoCMS&config=eyJjb21tYW5kIjoibnB4IC15IEBkYXRvY21zL21jcEBsYXRlc3QiLCJlbnYiOnsiREFUT0NNU19BUElfVE9LRU4iOiIifSwiYXJncyI6W119)
 
 #### Or install manually:
 
-Go to `Cursor Settings` -> `MCP` -> `Add new MCP Server`, then paste the following:
+Go to `Cursor Settings` -> `Tools & Integrations` -> `New MCP Server`, then paste the following:
 
 ```json
 {
   "mcpServers": {
-    "datocms": {
+    "DatoCMS": {
       "command": "npx -y @datocms/mcp@latest",
       "env": {
         "DATOCMS_API_TOKEN": ""
-      }
+      },
+      "args": []
     }
   }
 }
