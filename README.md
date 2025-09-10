@@ -10,6 +10,8 @@
 
 ## DatoCMS MCP Server
 
+⚠️ Alpha Release: This server is in early development. Features may change and stability is not guaranteed.
+
 A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). This server enables LLMs to explore and execute DatoCMS API operations through structured documentation and safe execution capabilities.
 
 ### Key Features
