@@ -1,4 +1,4 @@
-import { h2, pre, render } from "../markdown.js";
+import { h1, h2, p, pre, render } from "../markdown.js";
 import type {
 	CmaHyperschemaLink,
 	CmaHyperschemaLinkJsExample,
@@ -6,22 +6,38 @@ import type {
 
 const pattern = /::example\[([^\]]+)\]/g;
 
-function renderExample(example: CmaHyperschemaLinkJsExample) {
+export function renderExample(example: CmaHyperschemaLinkJsExample) {
 	if (!example.request?.code) {
 		return "";
 	}
 
 	return render(
-		h2("Example: ", example.title),
-		example.description,
-		pre({ language: "javascript" }, example.request?.code),
+		h1(example.title),
+		p(example.description),
+		h2("Code"),
+		p(example.request?.description),
+		pre({ language: "typescript" }, example.request?.code),
+		h2("Returned output"),
+		p(example.response?.description),
+		pre({ language: "json" }, example.response?.code),
 	);
 }
 
-export function buildHyperschemaLinkDescription(link: CmaHyperschemaLink) {
+function renderExampleTruncated(example: CmaHyperschemaLinkJsExample) {
+	return render(
+		h2("Example: ", example.title),
+		`Use tool \`cma_js_client_resource_action_example\` with exampleId: "${example.id}" to view full example`,
+	);
+}
+
+export function buildHyperschemaLinkDescription(
+	link: CmaHyperschemaLink,
+	maxExamples = 2,
+) {
 	const examples = link?.documentation?.javascript?.examples || [];
 	const description = link.description || "";
 	const examplesInDescription: string[] = [];
+	const shouldTruncate = examples.length > maxExamples;
 
 	const result = description.replace(pattern, (_match, name) => {
 		examplesInDescription.push(name);
@@ -30,10 +46,24 @@ export function buildHyperschemaLinkDescription(link: CmaHyperschemaLink) {
 			return "";
 		}
 
-		return `\n\n${renderExample(example)}`;
+		return shouldTruncate
+			? `\n\n${renderExampleTruncated(example)}`
+			: `\n\n${renderExample(example)}`;
 	});
 
-	return examples
-		.filter((example) => !examplesInDescription.includes(example.id))
-		.reduce((acc, example) => `${acc}\n\n${renderExample(example)}`, result);
+	const remainingExamples = examples.filter(
+		(example) => !examplesInDescription.includes(example.id),
+	);
+
+	if (shouldTruncate) {
+		return remainingExamples.reduce(
+			(acc, example) => `${acc}\n\n${renderExampleTruncated(example)}`,
+			result,
+		);
+	}
+
+	return remainingExamples.reduce(
+		(acc, example) => `${acc}\n\n${renderExample(example)}`,
+		result,
+	);
 }

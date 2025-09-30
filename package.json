@@ -1,62 +1,62 @@
 {
-  "name": "@datocms/mcp",
-  "version": "1.0.8",
-  "main": "dist/src/index.js",
-  "type": "module",
-  "bin": "./bin/stdio",
-  "scripts": {
-    "format": "npx @biomejs/biome check --write --unsafe",
-    "build": "npx rimraf dist && tsc",
-    "prepublish": "npm run build",
-    "test": "echo 1",
-    "start": "npm run build && ./bin/stdio"
-  },
-  "author": "Stefano Verna (s.verna@datocms.com)",
-  "license": "MIT",
-  "description": "Model Context Protocol server for DatoCMS",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/datocms/mcp.git"
-  },
-  "homepage": "https://github.com/datocms/mcp",
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "datocms",
-    "cms",
-    "ai",
-    "claude"
-  ],
-  "files": [
-    "dist",
-    "bin"
-  ],
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^14.1.1",
-    "@datocms/cma-client-node": "^5.0.1",
-    "@modelcontextprotocol/sdk": "^1.15.1",
-    "dedent": "^1.6.0",
-    "ky": "^1.8.1",
-    "node-jq": "^6.0.1",
-    "serialize-error": "^12.0.0",
-    "typescript": "^5.8.3",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@langchain/anthropic": "^0.3.25",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
-    "@types/node": "^24.0.14",
-    "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
-    "express": "^5.1.0",
-    "langchain": "^0.3.30",
-    "mcp-use": "^0.1.8",
-    "np": "^10.2.0",
-    "rimraf": "^6.0.1",
-    "winston": "^3.17.0"
-  }
+	"name": "@datocms/mcp",
+	"version": "1.0.8",
+	"main": "dist/src/index.js",
+	"type": "module",
+	"bin": "./bin/stdio",
+	"scripts": {
+		"format": "npx @biomejs/biome check --write --unsafe",
+		"build": "npx rimraf dist && tsc",
+		"prepublish": "npm run build",
+		"test": "echo 1",
+		"start": "npm run build && ./bin/stdio"
+	},
+	"author": "Stefano Verna (s.verna@datocms.com)",
+	"license": "MIT",
+	"description": "Model Context Protocol server for DatoCMS",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/datocms/mcp.git"
+	},
+	"homepage": "https://github.com/datocms/mcp",
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"datocms",
+		"cms",
+		"ai",
+		"claude"
+	],
+	"files": [
+		"dist",
+		"bin"
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"@apidevtools/json-schema-ref-parser": "^14.1.1",
+		"@datocms/cma-client-node": "^5.0.1",
+		"@modelcontextprotocol/sdk": "^1.15.1",
+		"dedent": "^1.6.0",
+		"ky": "^1.8.1",
+		"node-jq": "^6.0.1",
+		"serialize-error": "^12.0.0",
+		"typescript": "^5.8.3",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@langchain/anthropic": "^0.3.25",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.3",
+		"@types/node": "^24.0.14",
+		"cors": "^2.8.5",
+		"dotenv": "^16.6.1",
+		"express": "^5.1.0",
+		"langchain": "^0.3.30",
+		"mcp-use": "^0.1.8",
+		"np": "^10.2.0",
+		"rimraf": "^6.0.1",
+		"winston": "^3.17.0"
+	}
 }

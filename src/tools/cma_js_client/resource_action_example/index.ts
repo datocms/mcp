@@ -1,34 +1,33 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
-import { buildHyperschemaLinkDescription } from "../../../lib/cma/examples.js";
+import { renderExample } from "../../../lib/cma/examples.js";
 import {
 	fetchCmaHyperschema,
 	findCmaHyperschemaLink,
 } from "../../../lib/cma/utils.js";
 import { invariant } from "../../../lib/invariant.js";
 import {
-	extractJsClientEndpointMethods,
 	fetchCmaJsClientSchema,
 	findCmaJsClientEndpointByRel,
 	findCmaJsClientEntityByNamespace,
 } from "../../../lib/js_client/utils.js";
-import { h1, pre, render } from "../../../lib/markdown.js";
 import { simplifiedRegisterTool } from "../../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {
 	simplifiedRegisterTool(
 		server,
-		"cma_js_client_resource_action",
+		"cma_js_client_resource_action_example",
 		{
-			title: "Describe a @datocms/cma-client-node resource action",
+			title: "View a complete @datocms/cma-client-node resource action example",
 			description:
-				"Returns information about a specific resource action and all the available client methods that can be used to trigger it",
+				"Returns the complete code example for a specific resource action, including title, description, and full code",
 			inputSchema: {
 				resource: z.string().describe("The resource (ie. items)"),
 				action: z.string().describe("The action (ie. create)"),
+				exampleId: z.string().describe("The example ID to retrieve"),
 			},
 		},
-		async ({ resource: namespace, action: rel }) => {
+		async ({ resource: namespace, action: rel, exampleId }) => {
 			const jsClientSchema = await fetchCmaJsClientSchema();
 			const hyperschema = await fetchCmaHyperschema();
 
@@ -63,18 +62,16 @@ export function register(server: McpServer) {
 				"Invalid resource/action name: Use the `cma_js_client_resources`/`cma_js_client_resource` tools to learn about the available resources and actions.",
 			);
 
-			const methods = extractJsClientEndpointMethods(jsClientEndpoint);
+			const examples =
+				hyperschemaLink?.documentation?.javascript?.examples || [];
+			const example = examples.find((ex) => ex.id === exampleId);
 
-			return render(
-				hyperschemaLink.description
-					? `${buildHyperschemaLinkDescription(hyperschemaLink, 2)}\n\n`
-					: "",
-				h1(`Available methods (client.${namespace}.<METHOD>(<ARGS>))`),
-				pre(
-					{ language: "typescript" },
-					methods.map((method) => method.functionDefinition).join("\n\n"),
-				),
+			invariant(
+				example,
+				`Invalid example ID: "${exampleId}". Use the \`cma_js_client_resource_action\` tool to see available examples.`,
 			);
+
+			return renderExample(example);
 		},
 	);
 }

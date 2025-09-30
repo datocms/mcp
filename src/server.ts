@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { register as registerCmaJsClientResource } from "./tools/cma_js_client/resource/index.js";
 import { register as registerCmaJsClientResourceAction } from "./tools/cma_js_client/resource_action/index.js";
+import { register as registerCmaJsClientResourceActionExample } from "./tools/cma_js_client/resource_action_example/index.js";
 import { register as registerCmaJsClientResourceActionMethod } from "./tools/cma_js_client/resource_action_method/index.js";
 import { register as registerCmaJsClientResourceActionMethodExecute } from "./tools/cma_js_client/resource_action_method_execute/index.js";
 import { register as registerCmaJsClientResources } from "./tools/cma_js_client/resources/index.js";
@@ -16,6 +17,7 @@ export function createServer(apiToken: string | undefined) {
 	registerCmaJsClientResources(server);
 	registerCmaJsClientResource(server);
 	registerCmaJsClientResourceAction(server);
+	registerCmaJsClientResourceActionExample(server);
 	registerCmaJsClientResourceActionMethod(server);
 
 	if (apiToken) {

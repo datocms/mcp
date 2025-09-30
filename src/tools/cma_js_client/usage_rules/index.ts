@@ -18,6 +18,7 @@ export function register(server: McpServer) {
 
 					Before writing ANY code containing DatoCMS client methods:
 					✅ CHECKPOINT: Have I called cma_js_client_resource_action_method for EVERY SINGLE method I'm about to use?
+					✅ CHECKPOINT: Have I called cma_js_client_resource_action_example for EVERY SINGLE example that is related to my use case?
 
 					If the answer is NO, STOP IMMEDIATELY and call the tool.
 					If the answer is YES, list each method and its corresponding tool call in your response.
@@ -26,6 +27,7 @@ export function register(server: McpServer) {
 					□ Called cma_js_client_usage_rules
 					□ Identified ALL methods: [list them here]
 					□ Called cma_js_client_resource_action_method for: [list each method]
+					□ Called cma_js_client_resource_action_example for: [list each method]
 					□ Only now proceeding with code using exact schemas
 
 					⚠️ If any checkbox is unchecked, CODE WRITING IS FORBIDDEN
@@ -110,7 +112,7 @@ export function register(server: McpServer) {
 
 					The \`jqSelector\` parameter filters and transforms API responses using jq syntax:
 
-					Quoting: Use double quotes for strings/fields: \`.data[0].attributes["title"]\`. Escape quotes in literals: \`"Title: \"" + .title + "\""\`
+					Quoting: Use double quotes for strings/fields: \`.data[0].attributes["title"]\`. Escape quotes in literals: \`"Title: "" + .title + """\`
 
 					\`\`\`jq
 					.data[0].attributes.title                           # Single field

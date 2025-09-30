@@ -116,25 +116,25 @@ export function register(server: McpServer, apiToken: string) {
 					const result = await client[namespace][method](...args);
 					const serialized = jqSelector
 						? ((await jq.run(jqSelector, result, {
-							input: "json",
-							output: "pretty",
-						})) as string)
+								input: "json",
+								output: "pretty",
+							})) as string)
 						: JSON.stringify(result, null, 2);
 					const lines = serialized.split(`\n`);
 
 					return render(
 						...(lines.length > 500
 							? [
-								p("The response is too lengthy!"),
-								h1("First 500 lines of the response:"),
-								p(
-									"If the method is idempotent, you may optionally use it to repeat your request with a `jqSelector` argument in order to reduce the response length:",
-								),
-								pre(
-									{ language: "json" },
-									serialized.split(`\n`).slice(0, 500).join("\n"),
-								),
-							]
+									p("The response is too lengthy!"),
+									h1("First 500 lines of the response:"),
+									p(
+										"If the method is idempotent, you may optionally use it to repeat your request with a `jqSelector` argument in order to reduce the response length:",
+									),
+									pre(
+										{ language: "json" },
+										serialized.split(`\n`).slice(0, 500).join("\n"),
+									),
+								]
 							: [pre({ language: "json" }, serialized)]),
 					);
 				} catch (e) {
