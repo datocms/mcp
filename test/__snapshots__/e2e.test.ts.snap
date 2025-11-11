@@ -1,0 +1,2673 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MCP Server E2E Tests > Server without API token > should call resource with valid resource name 1`] = `
+[
+  {
+    "text": "DatoCMS stores the individual pieces of content you create from a model as records (for backwards compatibility the API calls these \`item\`). The shape of a record’s attributes depends on the fields defined by that record’s model — see the [Object payload](#object-payload) section for the full object payload documentation.
+
+\`\`\`json
+// A simple record
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "publication_date": "2024-01-15"
+  },
+  "relationships": {
+    "item_type": {
+      "data": { "id": "BxZ9Y2aKQVeTnM4hP8wLpD", "type": "item_type" }
+    }
+  }
+}
+\`\`\`
+
+> [!PROTIP] 📘 New to content modeling?
+> Check out the [Content Modeling Guide](/docs/content-modelling) to understand how to design models, fields, and relationships before diving into API usage.
+
+---
+
+## Field types overview
+
+###### Scalar fields
+These store basic data types (ie. strings, numbers, booleans):
+
+<details><summary>Single-line string</summary></details>
+
+<details><summary>Slug</summary></details>
+
+<details><summary>Multi-line text</summary></details>
+
+<details><summary>Boolean</summary></details>
+
+<details><summary>Integer</summary></details>
+
+<details><summary>Float</summary></details>
+
+<details><summary>Date</summary></details>
+
+<details><summary>Date time</summary></details>
+
+<details><summary>JSON</summary></details>
+
+###### Object Fields
+These require structured objects:
+
+<details><summary>Color</summary></details>
+
+
+<details><summary>Location</summary></details>
+
+<details><summary>SEO</summary></details>
+
+<details><summary>External video</summary></details>
+
+###### Reference Fields
+
+These point to other resources (either assets or other records):
+
+<details><summary>Single-asset</summary></details>
+
+<details><summary>Asset gallery</summary></details>
+
+<details><summary>Single link</summary></details>
+
+<details><summary>Multiple links</summary></details>
+
+###### Block Fields
+
+These are special fields that contain **blocks within records**:
+
+| Field Type          | What it contains                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Modular content** | An array of blocks, perfect for building dynamic page sections                                                            |
+| **Single block**    | A single block instance or \`null\`                                                                                         |
+| **Structured text** | A rich text document that can have blocks embedded within the flow of content ([DAST format](/docs/structured-text/dast)) |
+
+Blocks are **records within records** - they're separate items that live inside fields of other records.
+
+> [!PROTIP] 📚 Content Modeling Context
+> To understand when and how to design blocks vs models, see [Blocks Guide](/docs/content-modelling/blocks). For field-specific concepts, see [Modular Content](/docs/content-modelling/modular-content) and [Structured Text](/docs/content-modelling/structured-text).
+
+Blocks inside those fields are unique because they can be represented in two different ways depending on the context: as a lightweight reference (an ID) or as a full content object. Understanding this duality is key to working with them effectively:
+
+* **Block ID (Lightweight Reference)**: A simple \`String\` that uniquely identifies the block (ie. \`"dhVR2HqgRVCTGFi_0bWqLqA"\`). This is useful when you only need to know *which* block is there, not what's inside it.
+
+* **Block Object (Full Content)**: The complete record object for the block, containing its own \`id\`, \`type\`, \`attributes\`, and \`relationships\`. This is used when you need to read or modify the block's actual content.
+
+  \`\`\`json
+  {
+    "id": "dhVR2HqgRVCTGFi_0bWqLqA",
+    "type": "item",
+    "attributes": {
+      "title": "Block Title",
+      "content": "Block content..."
+    },
+    "relationships": {
+      "item_type": {
+        "data": { "id": "BxZ9Y2aKQVeTnM4hP8wLpD", "type": "item_type" }
+      }
+    }
+  }
+  \`\`\`
+
+<details><summary>Modular Content</summary></details>
+
+<details><summary>Single Block</summary></details>
+
+<details><summary>Structured Text</summary></details>
+
+---
+
+## API response modes: Regular vs. Nested
+
+When fetching record data, the API gives you control over how block fields are represented in the response. These two modes, **Regular** and **Nested**, are available on the following endpoints:
+
+* [Retrieve a single record (\`GET /items/:id\`)](/docs/content-management-api/resources/item/self)
+* [Retrieve multiple records (\`GET /items\`)](/docs/content-management-api/resources/item/instances)
+* [Retrieve records referenced by a record (\`GET /items/:id/references\`)](/docs/content-management-api/resources/item/references)
+* [Retrieve records linked to an asset (\`GET /upload/:id/references\`)](/docs/content-management-api/resources/upload/references)
+
+###### Regular mode (default)
+
+By default, the API returns block fields as IDs only. This is efficient and fast, making it ideal for listings or when you don't need the blocks' content immediately.
+
+\`\`\`json
+GET /items/A4gkL_8pTZmcyJ-IlIEd2w
+
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "content_blocks": ["dhVR2HqgRVCTGFi_0bWqLqA", "kL9mN3pQrStUvWxYzAbCdE"],
+    "featured_block": "nZ8xY2vWqTuJkL3mNcBeFg"
+  }
+}
+\`\`\`
+
+###### Nested mode (\`?nested=true\`)
+
+The same endpoint, when passing the \`?nested=true\` option, returns **block fields as full objects**. This is essential when you need to display or edit the content within the blocks.
+
+\`\`\`json
+GET /items/A4gkL_8pTZmcyJ-IlIEd2w?nested=true
+
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "content_blocks": [
+      {
+        "id": "dhVR2HqgRVCTGFi_0bWqLqA",
+        "type": "item",
+        "attributes": { "title": "Hero Section", "content": "Welcome to our site" },
+        "relationships": { ... }
+      },
+      {
+        "id": "kL9mN3pQrStUvWxYzAbCdE",
+        "type": "item",
+        "attributes": { "title": "Image Gallery", "images": [...] },
+        "relationships": { ... }
+      }
+    ],
+    "featured_block": {
+      "id": "nZ8xY2vWqTuJkL3mNcBeFg",
+      "type": "item",
+      "attributes": { ... },
+      "relationships": { ... }
+    }
+  }
+}
+\`\`\`
+
+> [!WARNING] Block Fields vs. Other Reference Fields
+> Block fields are the **only** field type that change representation between modes! Asset and link fields always return IDs. To get full details for assets or linked records, you need to make separate API calls using their IDs.
+
+###### When to use each mode?
+
+| Use "Regular Mode" when...                                                                                     | Use "Nested Mode" when...                                                                     |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Listing many records or building navigation.                                                                   | Displaying or editing block content, as it provides the actual content needed.                |
+| You only need to know which blocks exist.                                                                      | You need to read the actual block content for display or updates.                             |
+| Building navigation                                                                                            | Preparing to update blocks                                                                    |
+| Performance is critical; it's faster because it returns smaller responses (block IDs instead of full content). | You are building content editing interfaces where usability is more important than raw speed. |
+
+
+---
+
+## Creating and updating blocks
+
+Working with blocks follows one fundamental constraint:
+
+**You cannot create, edit, or delete blocks directly. You must always update the parent record that contains them.**
+
+This ensures data integrity. To create/modify blocks, you send a payload to the parent record's endpoint, using a mix of Block IDs and Block Objects to describe the desired changes.
+
+###### Key rules for block operations
+
+1.  **To create a new block**: Provide the **full object**, including \`type\`, \`attributes\`, and the \`relationships.item_type\` which specifies the Block Model being used.
+2.  **To update an existing block**: Provide the **full object**, including its \`id\` and the changed \`attributes\`. You only need to include the specific attributes that you want to change - unchanged attributes will be preserved. You don't need to specify \`relationships.item_type\`.
+3.  **To keep an existing block unchanged**: Simply provide its **Block ID** string. This is the most efficient way to handle unchanged blocks.
+4.  **To delete a block**: Omit it from the payload. For a Modular Content array, remove its ID. For a Single Block field, set the value to \`null\`.
+5.  **To reorder blocks** (in Modular Content): Send an array of Block IDs in the new desired order.
+
+
+The following examples show how to apply these rules.
+
+<details><summary>Working with Modular Content Fields</summary></details>
+
+<details><summary>Working with Single Block Fields</summary></details>
+
+<details><summary>Working with Structured Text Fields</summary></details>
+
+###### Deeply-nested blocks
+
+Blocks can contain other blocks, creating hierarchies multiple levels deep. **The same principles apply recursively.** When you fetch a record with \`?nested=true\`, the API will expand nested blocks at all levels.
+
+When updating, you are always sending a payload to the top-level parent record, but you can specify changes to deeply nested blocks using the same ID vs. object rules.
+
+<details><summary>Example: Updating a nested block</summary></details>
+
+---
+
+## Localization
+
+Localization allows you to store different versions of your content for different languages or regions. When you mark a field as "localizable" in your model, its structure in the API changes to accommodate multiple values.
+
+The fundamental change is that the field's value is no longer a single piece of data but an **object keyed by locale codes**.
+
+For example, a simple non-localized \`title\` field looks like this:
+\`\`\`json
+{
+  "title": "Hello World"
+}
+\`\`\`
+
+When localized, it becomes an object containing a value for each configured locale:
+\`\`\`json
+{
+  "title": {
+    "en": "Hello World",
+    "it": "Ciao Mondo",
+    "fr": "Bonjour le Monde"
+  }
+}
+\`\`\`
+This principle applies to **every type of field**, from simple strings to **Modular Content**, **Single Block**, and **Structured Text** fields. For instance, a localized Modular Content field will contain a separate array of blocks for each language. This powerful feature allows you to have completely different block structures for each locale.
+
+<details><summary>Example: Localized Modular Content field</summary></details>
+
+<details><summary>Example: Localized Single Block field</summary></details>
+
+<details><summary>Example: Localized Structured Text field</summary></details>
+
+When reading or writing localized content, there are a few key rules to follow to ensure data integrity.
+
+###### Locale consistency
+Within a single record, all localized fields must have a consistent set of locales. You cannot have a \`title\` with English and Italian, and a \`description\` with English and French in the same record.
+
+\`\`\`json
+// ❌ This will FAIL due to inconsistent locales ("it" vs "fr")
+{
+  "title": { "en": "Title", "it": "Titolo" },
+  "description": { "en": "Description", "fr": "Description" }
+}
+
+// ✅ This is VALID because locales are consistent across all fields
+{
+  "title": { "en": "Title", "it": "Titolo" },
+  "description": { "en": "Description", "it": "Descrizione" }
+}
+\`\`\`
+
+###### Models enforcing all locales
+
+You can configure a model to require every project locale to be present for its localized fields using the [\`all_locales_required\`](/docs/content-management-api/resources/item-type#object-payload) attribute.
+
+When this setting is enabled, records **must include a key for every defined locale** within each localized field. The value for a locale can be \`null\`, but the key itself is mandatory.
+
+\`\`\`json
+// ❌ FAILS: The "it" locale is missing.
+{
+  "title": { "en": "Title" }
+}
+
+// ✅ VALID: All required locale keys ("en", "it") are present.
+{
+  "title": { "en": "Title", "it": "Titolo" }
+}
+
+// ✅ ALSO VALID: The "it" key is present, even with a \`null\` value.
+{
+  "title": { "en": "Title", "it": null }
+}
+\`\`\`
+
+---
+
+## Type-safe development with TypeScript
+
+Since DatoCMS records don't have a predetermined structure, the JavaScript client cannot provide strict TypeScript types out of the box:
+
+\`\`\`typescript
+import { buildClient } from "@datocms/cma-client-node";
+
+const client = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
+const record = await client.items.find('dhVR2HqgRVCTGFi0bWqLqA');
+
+record.accent_color; // -> TypeScript type: unknown
+\`\`\`
+
+To get **full type-safety plus auto-completions and type hints in your code editor**, you can leverage the DatoCMS CLI to automatically generate TypeScript types based on your specific project schema.
+
+###### Generating types from your schema
+
+After [installing and configuring the CLI](https://www.datocms.com/docs/scripting-migrations/installing-the-cli), you can use the \`schema:generate\` command to generate a comprehensive TypeScript definition file describing your DatoCMS project structure (models and blocks):
+
+\`\`\`bash
+$ npx datocms schema:generate schema.ts
+\`\`\`
+
+\`\`\`typescript
+// schema.ts
+
+import type { ItemTypeDefinition } from '@datocms/cma-client';
+
+export type Article = ItemTypeDefinition<
+  '76hhD-LaS5CM3NPJw0991w', // ID of the Product model
+  {
+    name: { type: 'string'; };
+    slug: { type: 'slug'; };
+    accent_color: { type: 'color'; };
+    sections: { type: 'rich_text'; blocks: ArticleSection; };
+  }
+>;
+
+export type ArticleSection = ItemTypeDefinition<
+  'FJM79jjKRMSVg-fR6k6X2A', // ID of the ProductVariation block
+  {
+    title: { type: 'string'; };
+  }
+>;
+\`\`\`
+
+You can use the \`--item-types\` flag to only generate definitions for specific models/blocks:
+
+\`\`\`bash
+$ npx datocms schema:generate --item-types=product,article schema.ts
+\`\`\`
+
+The same type definitions can be included in your [migration scripts](/docs/scripting-migrations/scripting-migrations-with-the-datocms-cli#option-1-write-a-migration-script-manually) by using the \`migrations:new\` CLI command with \`--schema\` flag:
+
+\`\`\`bash
+# generate definitions for all the models/blocks
+$ npx datocms migrations:new 'tweak articles' --schema=all
+# only generate definitions for article and author
+$ npx datocms migrations:new 'tweak articles' --schema=article,author
+\`\`\`
+
+An \`ItemTypeDefinition\` is a minimal type blueprint for your API payloads. It only includes what's needed for typed API calls: field names, their data types, and any allowed block types. It intentionally omits details like validation rules or default values, as they don't affect the shape of the data sent to or from the API.
+
+> [!WARNING] 😉 Practical, not perfect
+> These types are designed for a practical developer experience, not perfect precision. In other words, you might still encounter API errors even if TypeScript gives you the green light. The types ensure the structure of a request is valid, but not necessarily the values within it (e.g., a string that's too long).
+
+###### Use generated types
+
+These definition types can be used as generics in all API calls related to records to get a fully typed interface:
+
+\`\`\`typescript
+import * as Schema from './schema';
+
+// Fully typed record retrieval
+const record = await client.items.find<Schema.Article>('AZUeMuPySxuJCJ8ibEVE7w');
+record.accent_color; // -> ColorFieldValue (properly typed!)
+
+// Type-safe record creation
+const record = await client.items.create<Schema.Article>({
+  item_type: { id: 'dhVR2HqgRVCTGFi0bWqLqA', type: 'item_type' },
+  accent_color: '#FF0000', // ❌ TypeScript error! Wrong format!
+});
+\`\`\`
+
+###### TypeScript type narrowing with \`__itemTypeId\`
+
+Records include a top-level \`__itemTypeId\` property to help with TypeScript's type narrowing.
+
+Since TypeScript cannot infer types from nested properties like \`record.item_type.id\`, you can use the top-level \`__itemTypeId\` in your checks. This allows TypeScript to correctly identify the specific record type, enabling type-safe access to its unique properties.
+
+\`\`\`typescript
+// ❌ This doesn't work because \`item_type.id\` is a nested property.
+if (item.item_type.id === "BxZ9Y2aKQVeTnM4hP8wLpD") {
+  // TypeScript still sees a generic item type.
+  item.attributes.headline; // Error: Property 'headline' is \`unknown\`
+}
+
+// ✅ This works because \`__itemTypeId\` is a top-level property.
+if (item.__itemTypeId === "BxZ9Y2aKQVeTnM4hP8wLpD") {
+  // TypeScript now correctly infers the type.
+  item.attributes.headline; // OK!
+}
+\`\`\`
+
+
+# Available actions
+
+- instances (List all records)
+- validate_existing (Validates an existing record field)
+- validate_new (Validates a record field)
+- create (Create a new record)
+- duplicate (Duplicate a record)
+- update (Update a record)
+- references (Referenced records)
+- self (Retrieve a record)
+- current_vs_published_state (Retrieve information regarding changes between current and published versions of the record)
+- destroy (Delete a record)
+- publish (Publish a record)
+- unpublish (Unpublish a record)
+- bulk_publish (Publish items in bulk)
+- bulk_unpublish (Unpublish items in bulk)
+- bulk_destroy (Destroy items in bulk)
+- bulk_move_to_stage (Move items to stage in bulk)
+
+# Further documentation
+
+I recommend using the \`resource_action\` tool to learn the available methods for a specific action. Do not use \`resource_action_method\` directly. Pass through \`resource_action\` first to properly understand all the available methods for the same action.",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should call resource_action with itemTypes and instances action 1`] = `
+[
+  {
+    "text": "# Available methods (client.itemTypes.<METHOD>(<ARGS>))
+
+\`\`\`typescript
+list(): Promise<ItemTypeInstancesTargetSchema>
+
+rawList(): Promise<ItemTypeInstancesTargetSchema>
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should call resource_action with valid resource and action 1`] = `
+[
+  {
+    "text": "> [!PROTIP] 📚 New to DatoCMS records?
+> Before creating your first record, we strongly recommend reading the [Introduction to Records](/docs/content-management-api/resources/item) guide. It covers fundamental concepts about field types, block manipulation, and localization that are essential for building a valid creation payload.
+
+The payload required to create a new record is determined by the specific [model](/docs/content-management-api/resources/item-type) it's based on and the [fields](/docs/content-management-api/resources/field) it contains.
+
+
+
+<details><summary>Example: Basic example</summary></details>
+
+When creating a record, you don't need to specify a value for every field. Any field you omit will be set to its configured default value, or \`null\` if no default is set.
+
+While the [Introduction to Records guide](/docs/content-management-api/resources/item) offers a complete reference for every field type, there are several key rules that are especially important when **creating** a new record.
+
+### Field value formatting
+
+Every field in your payload must be formatted according to its type. This can range from a simple string or number to a structured object. For a comprehensive breakdown of the expected format for every field type, please refer to the **[Field Types Overview](/docs/content-management-api/resources/item#field-types-overview)** in our main records guide.
+
+
+
+<details><summary>Example: Managing simple fields</summary></details>
+
+#### Block Fields
+
+When creating a record, any new blocks (for Modular Content, Single Block, or Structured Text fields) **must be provided as full block objects**. This object must include the \`item_type\` in its \`relationships\` to specify which Block Model to use. For a deeper dive into manipulating blocks, see the guide on **[Creating and Updating Blocks](/docs/content-management-api/resources/item#creating-and-updating-blocks)**.
+
+
+
+<details><summary>Example: Modular content fields</summary></details>
+
+
+<details><summary>Example: Single block fields</summary></details>
+
+
+<details><summary>Example: Structured text fields</summary></details>
+
+#### Asset & Link Fields
+
+These reference fields require specific formats. For a comprehensive breakdown of the expected format for every field type, please refer to the **[Field Types Overview](/docs/content-management-api/resources/item#field-types-overview)** in our main records guide.
+
+
+
+<details><summary>Example: Linking assets to records</summary></details>
+
+
+<details><summary>Example: Linking records to other records</summary></details>
+
+### Localization
+
+If the record's model contains localized fields, your creation payload must adhere to specific rules:
+
+- All localized fields in a single payload must specify the same set of locales to ensure consistency.
+- If the model is configured to require all locales ([\`all_locales_required\`](/docs/content-management-api/resources/item-type#object-payload)), then the payload must include a key for every available locale for each localized field. The value of a field for a locale can be \`null\`, but the key itself is mandatory.
+
+For a full explanation of how to structure localized data, refer to the [localization Guide](/docs/content-management-api/resources/item#localization).
+
+
+
+<details><summary>Example: Managing localized fields</summary></details>
+
+
+<details><summary>Example: Tree-like structure</summary></details>
+
+# Available methods (client.items.<METHOD>(<ARGS>))
+
+\`\`\`typescript
+create(body: ItemCreateSchema<NoInfer<D>>): Promise<Item<NoInfer<D>>>
+
+rawCreate(body: ItemCreateSchema<NoInfer<D>>): Promise<{ data: ItemInNestedResponse<NoInfer<D>>; included: (ItemType | Item<ItemTypeDefinition>)[]; }>
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with valid resource and method /2 1`] = `
+[
+  {
+    "text": "\`\`\`typescript
+// Method: client.fields.create
+
+create(itemTypeId: string | ItemTypeData<ItemTypeDefinition>, body: FieldCreateSchema): Promise<(Omit<FieldStableShell, "field_type" | "default_value" | "validators" | "appearance" | "localized"> & { field_type: "boolean"; localized: false; default_value: BooleanFieldValue; validators: BooleanFieldValidators; appearance: BooleanFieldAppearance & Omit<...>; }) | ... 38 more ... | (Omit<...> & { ...; })>
+
+// Referenced Type Definitions:
+
+export type ItemTypeData<D extends ItemTypeDefinition = ItemTypeDefinition> = {
+    type: ItemTypeType;
+    id: D extends ItemTypeDefinition ? D['itemTypeId'] : ItemTypeIdentity;
+};
+
+export type ItemTypeDefinition<Settings extends {
+    locales: string;
+} = {
+    locales: string;
+}, ItemTypeId extends string = string, FieldDefinitions extends Record<string, FieldDefinition> = {}> = {
+    settings: Settings;
+    itemTypeId: ItemTypeId;
+    fields: FieldDefinitions;
+};
+
+export type FieldDefinition = BaseFieldDefinition<'boolean' | 'color' | 'date' | 'date_time' | 'file' | 'float' | 'gallery' | 'integer' | 'json' | 'lat_lon' | 'link' | 'links' | 'seo' | 'slug' | 'string' | 'text' | 'video' | 'unknown'> | RichTextFieldDefinition | SingleBlockFieldDefinition | StructuredTextFieldDefinition;
+
+type BaseFieldDefinition<Type extends string> = {
+    type: Type;
+    localized?: boolean;
+};
+
+type RichTextFieldDefinition<AllowedBlocks extends ItemTypeDefinition = ItemTypeDefinition> = BaseFieldDefinition<'rich_text'> & {
+    blocks: AllowedBlocks;
+};
+
+type SingleBlockFieldDefinition<AllowedBlocks extends ItemTypeDefinition = ItemTypeDefinition> = BaseFieldDefinition<'single_block'> & {
+    blocks: AllowedBlocks;
+};
+
+type StructuredTextFieldDefinition<AllowedBlocks extends ItemTypeDefinition = ItemTypeDefinition, AllowedInlineBlocks extends ItemTypeDefinition = ItemTypeDefinition> = BaseFieldDefinition<'structured_text'> & {
+    blocks?: AllowedBlocks;
+    inline_blocks?: AllowedInlineBlocks;
+};
+
+export type ItemTypeType = 'item_type';
+
+export type ItemTypeIdentity = string;
+
+export type FieldCreateSchema = FieldCreateConfig<FieldCreateSchemaStableShell>;
+
+export type FieldCreateConfig<SourceType> = FieldCreateConfigForFieldType<SourceType, 'boolean', BooleanFieldValue, BooleanFieldValidators, BooleanFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'color', ColorFieldValue, ColorFieldValidators, ColorFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'date', DateFieldValue, DateFieldValidators, DateFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'date_time', DateTimeFieldValue, DateTimeFieldValidators, DateTimeFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'file', null, FileFieldValidators, FileFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'float', FloatFieldValue, FloatFieldValidators, FloatFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'gallery', null, GalleryFieldValidators, GalleryFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'integer', IntegerFieldValue, IntegerFieldValidators, IntegerFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'json', JsonFieldValue, JsonFieldValidators, JsonFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'lat_lon', LatLonFieldValue, LatLonFieldValidators, LatLonFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'link', null, LinkFieldValidators, LinkFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'links', null, LinksFieldValidators, LinksFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'rich_text', null, RichTextFieldValidators, RichTextFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'seo', null, SeoFieldValidators, SeoFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'single_block', null, SingleBlockFieldValidators, SingleBlockFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'slug', null, SlugFieldValidators, SlugFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'string', StringFieldValue, StringFieldValidators, StringFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'structured_text', null, StructuredTextFieldValidators, StructuredTextFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'text', TextFieldValue, TextFieldValidators, TextFieldAppearance> | FieldCreateConfigForFieldType<SourceType, 'video', null, VideoFieldValidators, VideoFieldAppearance>;
+
+type FieldCreateConfigForFieldType<SourceType, FieldType extends FieldAttributesStableShell['field_type'], FieldValue, FieldValidators, FieldAppearance> = LocalizedFieldCreateConfigForFieldType<SourceType, FieldType, FieldValue, FieldValidators, FieldAppearance> | NonLocalizedFieldCreateConfigForFieldType<SourceType, FieldType, FieldValue, FieldValidators, FieldAppearance>;
+
+export type FieldAttributesStableShell = {
+    /**
+     * The label of the field
+     */
+    label: string;
+    /**
+     * Type of input
+     */
+    field_type: 'boolean' | 'color' | 'date' | 'date_time' | 'file' | 'float' | 'gallery' | 'integer' | 'json' | 'lat_lon' | 'link' | 'links' | 'rich_text' | 'seo' | 'single_block' | 'slug' | 'string' | 'structured_text' | 'text' | 'video';
+    /**
+     * Whether the field needs to be multilanguage or not
+     */
+    localized: boolean;
+    /**
+     * Default value for Field. When field is localized accepts an object of default values with site locales as keys
+     */
+    default_value: boolean | null | string | number | {
+        [k: string]: unknown;
+    };
+    /**
+     * Field API key
+     */
+    api_key: string;
+    /**
+     * Field hint
+     */
+    hint: string | null;
+    /**
+     * Optional field validations
+     */
+    validators: {
+        [k: string]: unknown;
+    };
+    /**
+     * Field appearance
+     */
+    appeareance?: {
+        editor: string;
+        parameters: {
+            [k: string]: unknown;
+        };
+        [k: string]: unknown;
+    };
+    /**
+     * Field appearance details, plugin configuration and field add-ons
+     */
+    appearance: {
+        /**
+         * A valid editor can be a DatoCMS default field editor type (ie. \`"single_line"\`), or a plugin ID offering a custom field editor
+         */
+        editor: string;
+        /**
+         * The specific field extension to use for the field (only if the editor is a modern plugin)
+         */
+        field_extension?: string;
+        /**
+         * The editor plugin's parameters
+         */
+        parameters: {
+            [k: string]: unknown;
+        };
+        /**
+         * An array of add-on plugins with id and parameters
+         */
+        addons: {
+            /**
+             * The ID of a plugin offering a field addon
+             */
+            id: string;
+            /**
+             * The specific field extension to use for the field (only if the editor is a modern plugin)
+             */
+            field_extension?: string;
+            parameters: {
+                [k: string]: unknown;
+            };
+            [k: string]: unknown;
+        }[];
+    };
+    /**
+     * Ordering index
+     */
+    position: number;
+    /**
+     * Whether deep filtering for block models is enabled in GraphQL or not
+     */
+    deep_filtering_enabled: boolean;
+};
+
+type LocalizedFieldCreateConfigForFieldType<SourceType, FieldType extends FieldAttributesStableShell['field_type'], FieldValue, FieldValidators, FieldAppearance> = Omit<SourceType, 'field_type' | 'default_value' | 'validators' | 'appearance' | 'localized'> & {
+    field_type: FieldType;
+    localized: true;
+    default_value?: Record<string, FieldValue>;
+    validators?: FieldValidators;
+    appearance?: FieldAppearanceConfig<FieldAppearance>;
+};
+
+type FieldAppearanceConfig<TAppearance> = TAppearance & Omit<FieldAttributesStableShell['appearance'], keyof TAppearance>;
+
+type NonLocalizedFieldCreateConfigForFieldType<SourceType, FieldType extends FieldAttributesStableShell['field_type'], FieldValue, FieldValidators, FieldAppearance> = Omit<SourceType, 'field_type' | 'default_value' | 'validators' | 'appearance' | 'localized'> & {
+    field_type: FieldType;
+    localized?: false;
+    default_value?: FieldValue;
+    validators?: FieldValidators;
+    appearance?: FieldAppearanceConfig<FieldAppearance>;
+};
+
+export type BooleanFieldValue = boolean | null;
+
+export type BooleanFieldValidators = Record<string, never>;
+
+export type BooleanFieldAppearance = {
+    editor: 'boolean';
+    parameters: BooleanEditorConfiguration;
+} | {
+    editor: 'boolean_radio_group';
+    parameters: BooleanRadioGroupEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type BooleanEditorConfiguration = Record<string, never>;
+
+export type BooleanRadioGroupEditorConfiguration = {
+    /** Radio input for positive choice (true) */
+    positive_radio: BooleanRadioGroupEditorConfigurationRadio;
+    /** Radio input for negative choice (false) */
+    negative_radio: BooleanRadioGroupEditorConfigurationRadio;
+};
+
+export type BooleanRadioGroupEditorConfigurationRadio = {
+    /** The text shown to the user for this radio option */
+    label: string;
+    /** Optional help text shown alongside the radio option */
+    hint?: string;
+};
+
+export type ColorFieldValue = {
+    red: number;
+    green: number;
+    blue: number;
+    alpha: number;
+} | null;
+
+export type ColorFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+};
+
+export type RequiredValidator = Record<string, never>;
+
+export type ColorFieldAppearance = {
+    editor: 'color_picker';
+    parameters: ColorPickerEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type ColorPickerEditorConfiguration = {
+    /** Should the color picker allow to specify the alpha value? */
+    enable_alpha: boolean;
+    /** List of preset colors to offer to the user (hex color strings) */
+    preset_colors: Array<string>;
+};
+
+export type DateFieldValue = string | null;
+
+export type DateFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept dates only inside a specified date range */
+    date_range?: DateRangeValidator;
+};
+
+export type DateRangeValidator = {
+    /** Minimum date (ISO 8601 date format) */
+    min: string;
+    /** Maximum date (ISO 8601 date format) */
+    max?: string;
+} | {
+    /** Minimum date (ISO 8601 date format) */
+    min?: string;
+    /** Maximum date (ISO 8601 date format) */
+    max: string;
+};
+
+export type DateFieldAppearance = {
+    editor: 'date_picker';
+    parameters: DatePickerEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type DatePickerEditorConfiguration = Record<string, never>;
+
+export type DateTimeFieldValue = string | null;
+
+export type DateTimeFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept date times only inside a specified date range */
+    date_time_range?: DateTimeRangeValidator;
+};
+
+export type DateTimeRangeValidator = {
+    /** Minimum datetime (ISO 8601 datetime format) */
+    min: string /** Maximum datetime (ISO 8601 datetime format) */;
+    max?: string;
+} | {
+    /** Minimum datetime (ISO 8601 datetime format) */
+    min?: string /** Maximum datetime (ISO 8601 datetime format) */;
+    max: string;
+};
+
+export type DateTimeFieldAppearance = {
+    editor: 'date_time_picker';
+    parameters: DateTimePickerEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type DateTimePickerEditorConfiguration = Record<string, never>;
+
+export type FileFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept assets only within a specified file size range */
+    file_size?: FileSizeValidator;
+    /** Accept assets only within a specified height and width range */
+    image_dimensions?: ImageDimensionsValidator;
+    /** Accept assets only within a specified aspect ratio range */
+    image_aspect_ratio?: ImageAspectRatioValidator;
+    /** Only accept assets with specific file extensions */
+    extension?: ExtensionValidator;
+    /** Assets contained in the field are required to specify custom title or alternate text */
+    required_alt_title?: RequiredAltTitleValidator;
+};
+
+export type FileSizeValidator = {
+    /** Numeric value for minimum filesize */
+    min_value: number /** Unit for minimum filesize */;
+    min_unit: 'B' | 'KB' | 'MB' /** Numeric value for maximum filesize */;
+    max_value?: number /** Unit for maximum filesize */;
+    max_unit?: 'B' | 'KB' | 'MB';
+} | {
+    /** Numeric value for minimum filesize */
+    min_value?: number /** Unit for minimum filesize */;
+    min_unit?: 'B' | 'KB' | 'MB' /** Numeric value for maximum filesize */;
+    max_value: number /** Unit for maximum filesize */;
+    max_unit: 'B' | 'KB' | 'MB';
+};
+
+export type ImageDimensionsValidator = {
+    /** Numeric value for minimum width */
+    width_min_value: number /** Numeric value for maximum width */;
+    width_max_value?: number /** Numeric value for minimum height */;
+    height_min_value?: number /** Numeric value for maximum height */;
+    height_max_value?: number;
+} | {
+    /** Numeric value for minimum width */
+    width_min_value?: number /** Numeric value for maximum width */;
+    width_max_value: number /** Numeric value for minimum height */;
+    height_min_value?: number /** Numeric value for maximum height */;
+    height_max_value?: number;
+} | {
+    /** Numeric value for minimum width */
+    width_min_value?: number /** Numeric value for maximum width */;
+    width_max_value?: number /** Numeric value for minimum height */;
+    height_min_value: number /** Numeric value for maximum height */;
+    height_max_value?: number;
+} | {
+    /** Numeric value for minimum width */
+    width_min_value?: number /** Numeric value for maximum width */;
+    width_max_value?: number /** Numeric value for minimum height */;
+    height_min_value?: number /** Numeric value for maximum height */;
+    height_max_value: number;
+};
+
+export type ImageAspectRatioValidator = {
+    /** Numerator part of the minimum aspect ratio */
+    min_ar_numerator: number /** Denominator part of the minimum aspect ratio */;
+    min_ar_denominator: number /** Numerator part for the required aspect ratio */;
+    eq_ar_numerator?: number /** Denominator part for the required aspect ratio */;
+    eq_ar_denominator?: number /** Numerator part of the maximum aspect ratio */;
+    max_ar_numerator?: number /** Denominator part of the maximum aspect ratio */;
+    max_ar_denominator?: number;
+} | {
+    /** Numerator part of the minimum aspect ratio */
+    min_ar_numerator?: number /** Denominator part of the minimum aspect ratio */;
+    min_ar_denominator?: number /** Numerator part for the required aspect ratio */;
+    eq_ar_numerator: number /** Denominator part for the required aspect ratio */;
+    eq_ar_denominator: number /** Numerator part of the maximum aspect ratio */;
+    max_ar_numerator?: number /** Denominator part of the maximum aspect ratio */;
+    max_ar_denominator?: number;
+} | {
+    /** Numerator part of the minimum aspect ratio */
+    min_ar_numerator?: number /** Denominator part of the minimum aspect ratio */;
+    min_ar_denominator?: number /** Numerator part for the required aspect ratio */;
+    eq_ar_numerator?: number /** Denominator part for the required aspect ratio */;
+    eq_ar_denominator?: number /** Numerator part of the maximum aspect ratio */;
+    max_ar_numerator: number /** Denominator part of the maximum aspect ratio */;
+    max_ar_denominator: number;
+};
+
+export type ExtensionValidator = {
+    /** Set of allowed file extensions */
+    extensions: string[];
+    predefined_list?: never;
+} | {
+    extensions?: never;
+    /** Allowed file type */
+    predefined_list: 'image' | 'transformable_image' | 'video' | 'document';
+};
+
+export type RequiredAltTitleValidator = {
+    /** Whether the title for the asset must be specified */
+    title: boolean /** Whether the alternate text for the asset must be specified */;
+    alt?: boolean;
+} | {
+    /** Whether the title for the asset must be specified */
+    title?: boolean /** Whether the alternate text for the asset must be specified */;
+    alt: boolean;
+};
+
+export type FileFieldAppearance = {
+    editor: 'file';
+    parameters: FileEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type FileEditorConfiguration = Record<string, never>;
+
+export type FloatFieldValue = number | null;
+
+export type FloatFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept numbers only inside a specified range */
+    number_range?: NumberRangeValidator;
+};
+
+export type NumberRangeValidator = {
+    /** Minimum value */ min: number /** Maximum value */;
+    max?: number;
+} | {
+    /** Minimum value */ min?: number /** Maximum value */;
+    max: number;
+};
+
+export type FloatFieldAppearance = {
+    editor: 'float';
+    parameters: FloatEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type FloatEditorConfiguration = {
+    /** A placeholder that will be shown in the editor's input to provide editors with an example */
+    placeholder?: string;
+};
+
+export type GalleryFieldValidators = {
+    /** Only accept a number of items within the specified range */
+    size?: SizeValidator;
+    /** Accept assets only within a specified file size range */
+    file_size?: FileSizeValidator;
+    /** Accept assets only within a specified height and width range */
+    image_dimensions?: ImageDimensionsValidator;
+    /** Accept assets only within a specified aspect ratio range */
+    image_aspect_ratio?: ImageAspectRatioValidator;
+    /** Only accept assets with specific file extensions */
+    extension?: ExtensionValidator;
+    /** Assets contained in the field are required to specify custom title or alternate text */
+    required_alt_title?: RequiredAltTitleValidator;
+};
+
+export type SizeValidator = {
+    /** Minimum length */
+    min: number /** Expected length */;
+    eq?: number /** Maximum length */;
+    max?: number /** The number of items must be multiple of this value */;
+    multiple_of?: number;
+} | {
+    /** Minimum length */
+    min?: number /** Expected length */;
+    eq: number /** Maximum length */;
+    max?: number /** The number of items must be multiple of this value */;
+    multiple_of?: number;
+} | {
+    /** Minimum length */
+    min?: number /** Expected length */;
+    eq?: number /** Maximum length */;
+    max: number /** The number of items must be multiple of this value */;
+    multiple_of?: number;
+} | {
+    /** Minimum length */
+    min?: number /** Expected length */;
+    eq?: number /** Maximum length */;
+    max?: number /** The number of items must be multiple of this value */;
+    multiple_of: number;
+};
+
+export type GalleryFieldAppearance = {
+    editor: 'gallery';
+    parameters: GalleryEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type GalleryEditorConfiguration = Record<string, never>;
+
+export type IntegerFieldValue = number | null;
+
+export type IntegerFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept numbers only inside a specified range */
+    number_range?: NumberRangeValidator;
+};
+
+export type IntegerFieldAppearance = {
+    editor: 'integer';
+    parameters: IntegerEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type IntegerEditorConfiguration = {
+    /** A placeholder that will be shown in the editor's input to provide editors with an example */
+    placeholder?: string;
+};
+
+export type JsonFieldValue = string | null;
+
+export type JsonFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+};
+
+export type JsonFieldAppearance = {
+    editor: 'json';
+    parameters: JsonEditorConfiguration;
+} | {
+    editor: 'string_multi_select';
+    parameters: StringMultiSelectEditorConfiguration;
+} | {
+    editor: 'string_checkbox_group';
+    parameters: StringCheckboxGroupEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type JsonEditorConfiguration = Record<string, never>;
+
+export type StringMultiSelectEditorConfiguration = {
+    /** The different select options */
+    options: Array<StringMultiSelectEditorConfigurationOption>;
+};
+
+export type StringMultiSelectEditorConfigurationOption = {
+    /** The text shown to the user for this option */
+    label: string;
+    /** The value that will be stored when this option is selected */
+    value: string;
+    /** Optional help text shown alongside the option */
+    hint?: string;
+};
+
+export type StringCheckboxGroupEditorConfiguration = {
+    /** The different checkbox options */
+    options: Array<StringCheckboxGroupEditorConfigurationOption>;
+};
+
+export type StringCheckboxGroupEditorConfigurationOption = {
+    /** The text shown to the user for this option */
+    label: string;
+    /** The value that will be stored when this option is selected */
+    value: string;
+    /** Optional help text shown alongside the option */
+    hint?: string;
+};
+
+export type LatLonFieldValue = {
+    latitude: number;
+    longitude: number;
+} | null;
+
+export type LatLonFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+};
+
+export type LatLonFieldAppearance = {
+    editor: 'map';
+    parameters: MapEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type MapEditorConfiguration = Record<string, never>;
+
+export type LinkFieldValidators = {
+    /** Only accept references to records of the specified models */
+    item_item_type: ItemItemTypeValidator;
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** The value must be unique across the whole collection of records */
+    unique?: UniqueValidator;
+};
+
+export type ItemItemTypeValidator = {
+    /** Set of allowed model IDs */
+    item_types: string[];
+    /**
+     * Strategy to apply when a publishing is requested and this field references some unpublished records.
+     * - "fail": Fail the operation and notify the user
+     * - "publish_references": Publish also the referenced records
+     * @default "fail"
+     */
+    on_publish_with_unpublished_references_strategy?: 'fail' | 'publish_references';
+    /**
+     * Strategy to apply when unpublishing is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "unpublish": Unpublish also this record
+     * - "delete_references": Try to remove the reference to the unpublished record (if the field has a required validation it will fail)
+     * @default "fail"
+     */
+    on_reference_unpublish_strategy?: 'fail' | 'unpublish' | 'delete_references';
+    /**
+     * Strategy to apply when deletion is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "delete_references": Try to remove the reference to the deleted record (if the field has a required validation it will fail)
+     * @default "delete_references"
+     */
+    on_reference_delete_strategy?: 'fail' | 'delete_references';
+};
+
+export type UniqueValidator = Record<string, never>;
+
+export type LinkFieldAppearance = {
+    editor: 'link_select';
+    parameters: LinkSelectEditorConfiguration;
+} | {
+    editor: 'link_embed';
+    parameters: LinkEmbedEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type LinkSelectEditorConfiguration = Record<string, never>;
+
+export type LinkEmbedEditorConfiguration = Record<string, never>;
+
+export type LinksFieldValidators = {
+    /** Only accept references to records of the specified models */
+    items_item_type: ItemsItemTypeValidator;
+    /** Only accept a number of items within the specified range */
+    size?: SizeValidator;
+};
+
+export type ItemsItemTypeValidator = {
+    /** Set of allowed model IDs */
+    item_types: string[];
+    /**
+     * Strategy to apply when a publishing is requested and this field references some unpublished records.
+     * - "fail": Fail the operation and notify the user
+     * - "publish_references": Publish also the referenced records
+     * @default "fail"
+     */
+    on_publish_with_unpublished_references_strategy?: 'fail' | 'publish_references';
+    /**
+     * Strategy to apply when unpublishing is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "unpublish": Unpublish also this record
+     * - "delete_references": Try to remove the reference to the unpublished record (if the field has a required validation it will fail)
+     * @default "fail"
+     */
+    on_reference_unpublish_strategy?: 'fail' | 'unpublish' | 'delete_references';
+    /**
+     * Strategy to apply when deletion is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "delete_references": Try to remove the reference to the deleted record (if the field has a required validation it will fail)
+     * @default "delete_references"
+     */
+    on_reference_delete_strategy?: 'fail' | 'delete_references';
+};
+
+export type LinksFieldAppearance = {
+    editor: 'links_select';
+    parameters: LinksSelectEditorConfiguration;
+} | {
+    editor: 'links_embed';
+    parameters: LinksEmbedEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type LinksSelectEditorConfiguration = Record<string, never>;
+
+export type LinksEmbedEditorConfiguration = Record<string, never>;
+
+export type RichTextFieldValidators = {
+    /** Only accept references to block records of the specified block models */
+    rich_text_blocks: RichTextBlocksValidator;
+    /** Only accept a number of items within the specified range */
+    size?: SizeValidator;
+};
+
+export type RichTextBlocksValidator = {
+    /** Set of allowed Block Model IDs */
+    item_types: string[];
+};
+
+export type RichTextFieldAppearance = {
+    editor: 'rich_text';
+    parameters: RichTextEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type RichTextEditorConfiguration = {
+    /** Whether you want block records collapsed by default or not */
+    start_collapsed?: boolean;
+};
+
+export type SeoFieldValidators = {
+    /** SEO field has to specify one or more properties, or it won't be valid */
+    required_seo_fields?: RequiredSeoFieldsValidator;
+    /** Accept assets only within a specified file size range */
+    file_size?: FileSizeValidator;
+    /** Accept assets only within a specified height and width range */
+    image_dimensions?: ImageDimensionsValidator;
+    /** Accept assets only within a specified aspect ratio range */
+    image_aspect_ratio?: ImageAspectRatioValidator;
+    /** Limits the length of the title for a SEO field */
+    title_length?: TitleLengthValidator;
+    /** Limits the length of the description for a SEO field */
+    description_length?: DescriptionLengthValidator;
+};
+
+export type RequiredSeoFieldsValidator = {
+    /** Whether the meta title must be specified */
+    title: boolean /** Whether the meta description must be specified */;
+    description?: boolean /** Whether the social sharing image must be specified */;
+    image?: boolean /** Whether the type of Twitter card must be specified */;
+    twitter_card?: boolean;
+} | {
+    /** Whether the meta title must be specified */
+    title?: boolean /** Whether the meta description must be specified */;
+    description: boolean /** Whether the social sharing image must be specified */;
+    image?: boolean /** Whether the type of Twitter card must be specified */;
+    twitter_card?: boolean;
+} | {
+    /** Whether the meta title must be specified */
+    title?: boolean /** Whether the meta description must be specified */;
+    description?: boolean /** Whether the social sharing image must be specified */;
+    image: boolean /** Whether the type of Twitter card must be specified */;
+    twitter_card?: boolean;
+} | {
+    /** Whether the meta title must be specified */
+    title?: boolean /** Whether the meta description must be specified */;
+    description?: boolean /** Whether the social sharing image must be specified */;
+    image?: boolean /** Whether the type of Twitter card must be specified */;
+    twitter_card: boolean;
+};
+
+export type TitleLengthValidator = {
+    /** Minimum value */ min: number /** Maximum value */;
+    max?: number;
+} | {
+    /** Minimum value */ min?: number /** Maximum value */;
+    max: number;
+};
+
+export type DescriptionLengthValidator = {
+    /** Minimum value */ min: number /** Maximum value */;
+    max?: number;
+} | {
+    /** Minimum value */ min?: number /** Maximum value */;
+    max: number;
+};
+
+export type SeoFieldAppearance = {
+    editor: 'seo';
+    parameters: SeoEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type SeoEditorConfiguration = {
+    /** Specify which fields of the SEO input should be visible to editors */
+    fields: Array<'title' | 'description' | 'image' | 'no_index' | 'twitter_card'>;
+    /** Specify which previews should be visible to editors */
+    previews: Array<'google' | 'twitter' | 'slack' | 'whatsapp' | 'telegram' | 'facebook' | 'linkedin'>;
+};
+
+export type SingleBlockFieldValidators = {
+    /** Only accept references to block records of the specified block models */
+    single_block_blocks: SingleBlockBlocksValidator;
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+};
+
+export type SingleBlockBlocksValidator = {
+    /** Set of allowed Block Model IDs */
+    item_types: string[];
+};
+
+export type SingleBlockFieldAppearance = {
+    editor: 'framed_single_block';
+    parameters: FramedSingleBlockEditorConfiguration;
+} | {
+    editor: 'frameless_single_block';
+    parameters: FramelessSingleBlockEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type FramedSingleBlockEditorConfiguration = {
+    /** Whether you want block record collapsed by default or not */
+    start_collapsed?: boolean;
+};
+
+export type FramelessSingleBlockEditorConfiguration = {
+    /** Whether you want block record collapsed by default or not */
+    start_collapsed?: boolean;
+};
+
+export type SlugFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** The value must be unique across the whole collection of records */
+    unique?: UniqueValidator;
+    /** Accept strings only with a specified number of characters */
+    length?: LengthValidator;
+    /** Only accept slugs having a specific format */
+    slug_format?: SlugFormatValidator;
+    /** Specifies the ID of the Single_line string field that will be used to generate the slug */
+    slug_title_field?: SlugTitleFieldValidator;
+};
+
+export type LengthValidator = {
+    /** Minimum length */
+    min: number /** Expected length */;
+    eq?: number /** Maximum length */;
+    max?: number;
+} | {
+    /** Minimum length */
+    min?: number /** Expected length */;
+    eq: number /** Maximum length */;
+    max?: number;
+} | {
+    /** Minimum length */
+    min?: number /** Expected length */;
+    eq?: number /** Maximum length */;
+    max: number;
+};
+
+export type SlugFormatValidator = {
+    /** Regular expression to be validated */
+    custom_pattern: string;
+    predefined_pattern?: never;
+} | {
+    custom_pattern?: never;
+    /** Allowed format */
+    predefined_pattern: 'webpage_slug';
+};
+
+export type SlugTitleFieldValidator = {
+    /** The field that will be used to generate the slug */
+    title_field_id: string;
+};
+
+export type SlugFieldAppearance = {
+    editor: 'slug';
+    parameters: SlugEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type SlugEditorConfiguration = {
+    /** A prefix that will be shown in the editor's form to give some context to your editors */
+    url_prefix?: string;
+    /** A placeholder that will be shown in the editor's input to provide editors with an example */
+    placeholder?: string;
+};
+
+export type StringFieldValue = string | null;
+
+export type StringFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** The value must be unique across the whole collection of records */
+    unique?: UniqueValidator;
+    /** Accept strings only with a specified number of characters */
+    length?: LengthValidator;
+    /** Accepts only strings that match a specified format */
+    format?: FormatValidator;
+    /** Only accept a specific set of values */
+    enum?: EnumValidator;
+};
+
+export type FormatValidator = {
+    /** Custom regular expression for validation */
+    custom_pattern?: string;
+    /** Specifies a pre-defined format (email or URL) */
+    predefined_pattern?: 'email' | 'url';
+    /**
+     * Description that serves as a hint for the user when using custom_pattern.
+     * Offers a simple explanation of the expected pattern, such as "The field must end with an 's'",
+     * instead of the default message like "Field must match the pattern: /s$/".
+     */
+    description?: string;
+};
+
+export type EnumValidator = {
+    /** Set of allowed values */
+    values: string[];
+};
+
+export type StringFieldAppearance = {
+    editor: 'single_line';
+    parameters: SingleLineEditorConfiguration;
+} | {
+    editor: 'string_radio_group';
+    parameters: StringRadioGroupEditorConfiguration;
+} | {
+    editor: 'string_select';
+    parameters: StringSelectEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type SingleLineEditorConfiguration = {
+    /** Indicates if the field should be shown bigger, as a field representing a heading */
+    heading: boolean;
+    /** A placeholder that will be shown in the editor's input to provide editors with an example */
+    placeholder?: string;
+};
+
+export type StringRadioGroupEditorConfiguration = {
+    /** The different radio options */
+    radios: Array<StringRadioGroupEditorConfigurationRadio>;
+};
+
+export type StringRadioGroupEditorConfigurationRadio = {
+    /** The text shown to the user for this radio option */
+    label: string;
+    /** The value that will be stored when this radio is selected */
+    value: string;
+    /** Optional help text shown alongside the radio option */
+    hint?: string;
+};
+
+export type StringSelectEditorConfiguration = {
+    /** The different select options */
+    options: Array<StringSelectEditorConfigurationOption>;
+};
+
+export type StringSelectEditorConfigurationOption = {
+    /** The text shown to the user for this option */
+    label: string;
+    /** The value that will be stored when this option is selected */
+    value: string;
+    /** Optional help text shown alongside the option */
+    hint?: string;
+};
+
+export type StructuredTextFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Only accept references to block records of the specified block models */
+    structured_text_blocks: StructuredTextBlocksValidator;
+    /** Only accept itemLink to inlineItem nodes for records of the specified models */
+    structured_text_links: StructuredTextLinksValidator;
+    /** Accept strings only with a specified number of characters */
+    length?: LengthValidator;
+    /** Only accept references to block records of the specified block models for inline blocks */
+    structured_text_inline_blocks?: StructuredTextInlineBlocksValidator;
+};
+
+export type StructuredTextBlocksValidator = {
+    /** Set of allowed Block Model IDs */
+    item_types: string[];
+};
+
+export type StructuredTextLinksValidator = {
+    /** Set of allowed model IDs */
+    item_types: string[];
+    /**
+     * Strategy to apply when a publishing is requested and this field references some unpublished records.
+     * - "fail": Fail the operation and notify the user
+     * - "publish_references": Publish also the referenced records
+     * @default "fail"
+     */
+    on_publish_with_unpublished_references_strategy?: 'fail' | 'publish_references';
+    /**
+     * Strategy to apply when unpublishing is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "unpublish": Unpublish also this record
+     * - "delete_references": Try to remove the reference to the unpublished record (if the field has a required validation it will fail)
+     * @default "delete_references"
+     */
+    on_reference_unpublish_strategy?: 'fail' | 'unpublish' | 'delete_references';
+    /**
+     * Strategy to apply when deletion is requested for a record referenced by this field.
+     * - "fail": Fail the operation and notify the user
+     * - "delete_references": Try to remove the reference to the deleted record (if the field has a required validation it will fail)
+     * @default "delete_references"
+     */
+    on_reference_delete_strategy?: 'fail' | 'delete_references';
+};
+
+export type StructuredTextInlineBlocksValidator = {
+    /** Set of allowed Block Model IDs */
+    item_types: string[];
+};
+
+export type StructuredTextFieldAppearance = {
+    editor: 'structured_text';
+    parameters: StructuredTextEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type StructuredTextEditorConfiguration = {
+    /** Specify which nodes the field should allow */
+    nodes: Array<'blockquote' | 'code' | 'heading' | 'link' | 'list' | 'thematicBreak'>;
+    /** Specify which marks the field should allow */
+    marks: Array<'strong' | 'emphasis' | 'underline' | 'strikethrough' | 'code' | 'highlight'>;
+    /** If nodes includes "heading", specify which heading levels the field should allow (numbers between 1 and 6) */
+    heading_levels: Array<1 | 2 | 3 | 4 | 5 | 6>;
+    /** Whether you want block nodes collapsed by default or not */
+    blocks_start_collapsed?: boolean;
+    /** Whether you want to show the "Open this link in a new tab?" checkbox, that fills in the target: "_blank" meta attribute for links */
+    show_links_target_blank?: boolean;
+    /** Whether you want to show the complete meta editor for links */
+    show_links_meta_editor?: boolean;
+};
+
+export type TextFieldValue = string | null;
+
+export type TextFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+    /** Accept strings only with a specified number of characters */
+    length?: LengthValidator;
+    /** Accepts only strings that match a specified format */
+    format?: FormatValidator;
+    /** Checks for the presence of malicious code in HTML fields */
+    sanitized_html?: SanitizedHtmlValidator;
+};
+
+export type SanitizedHtmlValidator = {
+    /** Content is actively sanitized before applying the validation */
+    sanitize_before_validation: boolean;
+};
+
+export type TextFieldAppearance = {
+    editor: 'markdown';
+    parameters: MarkdownEditorConfiguration;
+} | {
+    editor: 'wysiwyg';
+    parameters: WysiwygEditorConfiguration;
+} | {
+    editor: 'textarea';
+    parameters: TextareaEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type MarkdownEditorConfiguration = {
+    /** Specify which buttons the toolbar should have */
+    toolbar: Array<'heading' | 'bold' | 'italic' | 'strikethrough' | 'code' | 'unordered_list' | 'ordered_list' | 'quote' | 'link' | 'image' | 'fullscreen'>;
+};
+
+export type WysiwygEditorConfiguration = {
+    /** Specify which buttons the toolbar should have */
+    toolbar: Array<'format' | 'bold' | 'italic' | 'strikethrough' | 'code' | 'ordered_list' | 'unordered_list' | 'quote' | 'table' | 'link' | 'image' | 'show_source' | 'undo' | 'redo' | 'align_left' | 'align_center' | 'align_right' | 'align_justify' | 'outdent' | 'indent' | 'fullscreen'>;
+};
+
+export type TextareaEditorConfiguration = {
+    /** A placeholder that will be shown in the editor's input to provide editors with an example */
+    placeholder?: string;
+};
+
+export type VideoFieldValidators = {
+    /** Value must be specified or it won't be valid */
+    required?: RequiredValidator;
+};
+
+export type VideoFieldAppearance = {
+    editor: 'video';
+    parameters: VideoEditorConfiguration;
+} | {
+    /** Plugin ID */
+    editor: string;
+    /** Plugin configuration */
+    parameters: Record<string, unknown>;
+};
+
+export type VideoEditorConfiguration = Record<string, never>;
+
+export type FieldCreateSchemaStableShell = {
+    data: {
+        id?: FieldIdentity;
+        type: FieldType;
+        /**
+         * JSON API attributes
+         */
+        attributes: {
+            /**
+             * The label of the field
+             */
+            label: string;
+            /**
+             * Type of input
+             */
+            field_type: 'boolean' | 'color' | 'date' | 'date_time' | 'file' | 'float' | 'gallery' | 'integer' | 'json' | 'lat_lon' | 'link' | 'links' | 'rich_text' | 'seo' | 'single_block' | 'slug' | 'string' | 'structured_text' | 'text' | 'video';
+            /**
+             * Field API key
+             */
+            api_key: string;
+            /**
+             * Whether the field needs to be multilanguage or not
+             */
+            localized?: boolean;
+            /**
+             * Optional field validations
+             */
+            validators?: {
+                [k: string]: unknown;
+            };
+            /**
+             * Field appearance
+             */
+            appeareance?: {
+                editor: string;
+                parameters: {
+                    [k: string]: unknown;
+                };
+                [k: string]: unknown;
+            };
+            /**
+             * Field appearance details, plugin configuration and field add-ons
+             */
+            appearance?: {
+                /**
+                 * A valid editor can be a DatoCMS default field editor type (ie. \`"single_line"\`), or a plugin ID offering a custom field editor
+                 */
+                editor: string;
+                /**
+                 * The specific field extension to use for the field (only if the editor is a modern plugin)
+                 */
+                field_extension?: string;
+                /**
+                 * The editor plugin's parameters
+                 */
+                parameters: {
+                    [k: string]: unknown;
+                };
+                /**
+                 * An array of add-on plugins with id and parameters
+                 */
+                addons: {
+                    /**
+                     * The ID of a plugin offering a field addon
+                     */
+                    id: string;
+                    /**
+                     * The specific field extension to use for the field (only if the editor is a modern plugin)
+                     */
+                    field_extension?: string;
+                    parameters: {
+                        [k: string]: unknown;
+                    };
+                    [k: string]: unknown;
+                }[];
+            };
+            /**
+             * Ordering index
+             */
+            position?: number;
+            /**
+             * Field hint
+             */
+            hint?: string | null;
+            /**
+             * Default value for Field. When field is localized accepts an object of default values with site locales as keys
+             */
+            default_value?: boolean | null | string | number | {
+                [k: string]: unknown;
+            };
+            /**
+             * Whether deep filtering for block models is enabled in GraphQL or not
+             */
+            deep_filtering_enabled?: boolean;
+        };
+        /**
+         * JSON API links
+         */
+        relationships?: {
+            /**
+             * Fieldset linkage
+             */
+            fieldset: {
+                data: null | FieldsetData;
+            };
+        };
+    };
+};
+
+export type FieldIdentity = string;
+
+export type FieldType = 'field';
+
+export type FieldsetData = {
+    type: FieldsetType;
+    id: FieldsetIdentity;
+};
+
+export type FieldsetType = 'fieldset';
+
+export type FieldsetIdentity = string;
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with valid resource and method 1`] = `
+[
+  {
+    "text": "\`\`\`typescript
+// Method: client.items.create
+
+create(body: ItemCreateSchema<NoInfer<D>>): Promise<Item<NoInfer<D>>>
+
+// Referenced Type Definitions:
+
+export type ItemCreateSchema<D extends ItemTypeDefinition = ItemTypeDefinition> = {
+    id?: ItemIdentity;
+    type?: ItemType1;
+    item_type: ItemTypeData<D>;
+    creator?: AccountData | AccessTokenData | UserData | SsoUserData | OrganizationData;
+    /**
+     * Meta information regarding the record
+     */
+    meta?: {
+        /**
+         * Date of creation
+         */
+        created_at?: string;
+        /**
+         * Last update time
+         */
+        updated_at?: string;
+        /**
+         * Date of last publication
+         */
+        published_at?: null | string;
+        /**
+         * Date of first publication
+         */
+        first_published_at?: null | string;
+        /**
+         * Date of future publication
+         */
+        publication_scheduled_at?: null | string;
+        /**
+         * Status
+         */
+        status?: null | ('draft' | 'updated' | 'published');
+        /**
+         * Whether the current record is valid or not
+         */
+        is_valid?: boolean;
+        /**
+         * Whether the current version of the record is valid or not
+         */
+        is_current_version_valid?: null | boolean;
+        /**
+         * Whether the published version of the record is valid or not
+         */
+        is_published_version_valid?: null | boolean;
+        /**
+         * The ID of the current record version
+         */
+        current_version?: string;
+    };
+    __itemTypeId?: D['itemTypeId'];
+} & ToItemAttributesInRequest<D>;
+
+export type ItemTypeDefinition<Settings extends {
+    locales: string;
+} = {
+    locales: string;
+}, ItemTypeId extends string = string, FieldDefinitions extends Record<string, FieldDefinition> = {}> = {
+    settings: Settings;
+    itemTypeId: ItemTypeId;
+    fields: FieldDefinitions;
+};
+
+export type ItemIdentity = string;
+
+export type ItemType1 = 'item';
+
+export type ItemTypeData<D extends ItemTypeDefinition = ItemTypeDefinition> = {
+    type: ItemTypeType;
+    id: D extends ItemTypeDefinition ? D['itemTypeId'] : ItemTypeIdentity;
+};
+
+export type AccountData = {
+    type: AccountType;
+    id: AccountIdentity;
+};
+
+export type AccessTokenData = {
+    type: AccessTokenType;
+    id: AccessTokenIdentity;
+};
+
+export type UserData = {
+    type: UserType;
+    id: UserIdentity;
+};
+
+export type SsoUserData = {
+    type: SsoUserType;
+    id: SsoUserIdentity;
+};
+
+export type OrganizationData = {
+    type: OrganizationType;
+    id: OrganizationIdentity;
+};
+
+export type ToItemAttributesInRequest<T extends ItemTypeDefinition<any, any, any>> = T extends ItemTypeDefinition<infer Settings, infer ItemTypeId, infer Fields> ? keyof Fields extends never ? Record<string, unknown> : Partial<{
+    [K in keyof Fields]: Fields[K] extends FieldDefinition ? FieldDefinitionToFieldValueInRequest<Fields[K], Settings['locales']> : never;
+}> : never;
+
+export type Item<D extends ItemTypeDefinition = ItemTypeDefinition> = {
+    __itemTypeId?: D['itemTypeId'];
+    id: ItemIdentity;
+    type: ItemType1;
+    item_type: ItemTypeData<D>;
+    creator?: AccountData | AccessTokenData | UserData | SsoUserData | OrganizationData;
+    meta: ItemMeta;
+} & ToItemAttributes<D>;
+
+export type ItemMeta = {
+    /**
+     * Date of creation
+     */
+    created_at: string;
+    /**
+     * Last update time
+     */
+    updated_at: string;
+    /**
+     * Date of last publication
+     */
+    published_at: null | string;
+    /**
+     * Date of first publication
+     */
+    first_published_at: null | string;
+    /**
+     * Date of future publication
+     */
+    publication_scheduled_at: null | string;
+    /**
+     * Date of future unpublishing
+     */
+    unpublishing_scheduled_at: null | string;
+    /**
+     * Status
+     */
+    status: null | ('draft' | 'updated' | 'published');
+    /**
+     * Whether the current record is valid or not
+     */
+    is_valid: boolean;
+    /**
+     * Whether the current version of the record is valid or not
+     */
+    is_current_version_valid: null | boolean;
+    /**
+     * Whether the published version of record is valid or not
+     */
+    is_published_version_valid: null | boolean;
+    /**
+     * The ID of the current record version
+     */
+    current_version: string;
+    /**
+     * Workflow stage in which the item is
+     */
+    stage: null | string;
+    /**
+     * When the records can be organized in a tree, indicates whether the record has children
+     */
+    has_children: null | boolean;
+};
+
+export type ToItemAttributes<T extends ItemTypeDefinition<any, any, any>> = T extends ItemTypeDefinition<infer Settings, infer ItemTypeId, infer Fields> ? keyof Fields extends never ? Record<string, unknown> : {
+    [K in keyof Fields]: Fields[K] extends FieldDefinition ? FieldDefinitionToFieldValue<Fields[K], Settings['locales']> : never;
+} : never;
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should call resources successfully 1`] = `
+[
+  {
+    "text": "# Available resources grouped by theme
+
+## Main resources
+
+- items (Record — DatoCMS stores the individual pieces of content you create from a model as records (for backwards compatibility the API calls these \`item\`). The shape of a record’s attributes depends on the fields defined by that record’s model — see the [Object payload](#object-payload) section for the full object payload documentation.)
+- scheduledPublication (Scheduled publication — You can create scheduled publication to publish records in the future)
+- scheduledUnpublishing (Scheduled unpublishing — You can create a scheduled unpublishing to unpublish records in the future)
+- uploads (Upload — Each media object you upload to the Media Area of your DatoCMS project is represented as an \`upload\` entity.)
+- site (Site — A site represents a specific DatoCMS administrative area)
+- itemTypes (Model/Block model — The way you define the kind of content you can edit inside a DatoCMS project passes through the concept of **models** and **block models**. For backward-compatibility reasons, the API refers to both as "item types".)
+- fields (Field — DatoCMS offers a number of different fields that you can combine together to create a [Model](/docs/content-management-api/resources/item-type). Using the database metaphore, fields are like table columns, and when creating them you need to specify their type (\`string\`, \`float\`, etc.) and any required validation.)
+- fieldsets (Fieldset — Fields can be organized and grouped into fieldset to better present them to editors.)
+- itemVersions (Record version — Every change to a record is stored as a separate record version in DatoCMS.)
+
+## Upload-related
+
+- uploadRequest (Upload permission — To upload a file with the Content Management API, first you need to obtain an upload permission. The \`upload_request\` entity contains the S3-like URL where you will be able to upload the file with a raw/binary PUT request.)
+- uploadTracks (Upload track — If the asset linked to an Upload entity is a video file, you have the option to include additional audio tracks and subtitle tracks to it.)
+- uploadTags (Manual tags — All the project's upload tags)
+- uploadSmartTags (Smart tags — All the site's upload automatically generated tags)
+- uploadCollections (Upload Collection — In DatoCMS you can organize the uploads present in your administrative area in collection, so that the final editors can easily navigate uploads.)
+
+## Site Search
+
+- searchResults (Search result — DatoCMS Site Search is a way to deliver tailored search results to your site visitors. This is the endpoint you can use to query for results.)
+
+## Environments
+
+- environments (Environment — [Environments](https://www.datocms.com/docs/general-concepts/primary-and-sandbox-environments) make it easier for your development team to **manage and maintain content structure once your content has been published**. You can think of environments like code branches: great for testing, development and pre-production environments.)
+- maintenanceMode (Maintenance mode — )
+
+## UI
+
+- menuItems (Menu Item — In DatoCMS you can organize the different Models present in your administrative area reordering and grouping them, so that their purpose will be more clear to the final editor.)
+- schemaMenuItems (Schema Menu Item — In DatoCMS you can organize the different models and blocks present in your administrative area reordering and grouping them, so that their purpose will be more clear to the final editor.)
+- uploadFilters (Uploads filter — In DatoCMS you can create filters to help you (and other editors) quickly search for uploads)
+- itemTypeFilters (Model filter — In DatoCMS you can create filters to help you (and other editors) quickly search for records)
+- plugins (Plugin — Plugins enable developers to replace DatoCMS field components with HTML5 applications so the editing experiences of the DatoCMS web app can be customized.)
+
+## Workflows
+
+- workflows (Workflow — Through workflows it is possible to set up a precise state machine able to bring a draft content up to the final publication (and beyond), through a series of intermediate, fully customizable approval steps.)
+
+## Async jobs
+
+- jobResults (Job result — Some API endpoint give results asynchronously, returning the ID of a job.)
+
+## Roles & permissions
+
+- siteInvitations (Invitation — A DatoCMS administrative area can be accessed by multiple people. Every invitation is linked to a specific Role, which describes what actions it will be able to perform once the user will register.)
+- users (Collaborator — A DatoCMS administrative area can be accessed by multiple people. Every collaborator is linked to a specific Role, which describes what actions it will be able to perform once logged in.)
+- roles (Role — A Role represents a specific set of actions an editor (or an API token) can perform on your administrative area.)
+- accessTokens (API token — An API token allows access to our API. It is linked to a Role, which describes what actions can be performed.)
+
+## Webhooks
+
+- webhooks (Webhook — A webhook allows to make requests following certain Dato events. It is linked to a Role, which describes what actions can be performed.)
+- webhookCalls (Webhook call — This represents a log entry in the webhooks activity list, detailing a specific webhook event along with its delivery attempt information.)
+
+## Hosting & CI integrations
+
+- buildTriggers (Build trigger — Configuration for different build triggers. You can have different staging and production environments in order to test your site before final deploy)
+- buildEvents (Deploy activity — Represents an event occurred during the deploy process of your administrative area.)
+
+## Subscription
+
+- subscriptionLimits (Subscription limit — )
+- subscriptionFeatures (Subscription feature — )
+
+## Enterprise
+
+- ssoSettings (SSO Settings — Represents the Single Sign-on settings of the current DatoCMS project)
+- ssoUsers (SSO User — A Single Sign-On user exists when a DatoCMS project is connected to an external Identity Provider. An SSO user will not use the standard login procedure but has to go through SAML authentication. It can also be linked to one or more IdP groups.)
+- ssoGroups (SSO Group — A Single Sign-On group exists when a DatoCMS project is connected to an Identity Provider. These groups can be used to link DatoCMS roles to the Identity Provider's groups.)
+- whiteLabelSettings (White-label settings — Represents the white-label settings of the current DatoCMS project)
+- auditLogEvents (Audit log event — If the Audit log functionality is enabled in a project, logged events can be queried using SQL-like language and fetched in full detail so that they can be exported or analyzed.)
+
+# Usage example
+
+\`\`\`js
+import { buildClient } from "@datocms/cma-client-node";
+
+async function run() {
+const client = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
+await client.<RESOURCE>.<METHOD>(<ARGS>);
+}
+
+run();
+\`\`\`
+
+# Further documentation
+
+Use the \`resource\` tool to learn about a specific resource and all the available actions to interact with it.",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should filter and expand example in resource_action when expandDetails is provided 1`] = `
+[
+  {
+    "text": "<details open>
+<summary>Example: Basic example</summary>
+
+This example demonstrates the basic process of creating a new record using the DatoCMS Content Management API. The example shows how to specify the item type and provide values for the record's fields.
+\`\`\`javascript
+import {
+  buildClient,
+  type ItemTypeDefinition,
+  inspectItem,
+} from "@datocms/cma-client-node";
+
+type EnvironmentSettings = { locales: "en" };
+
+// 👇 Definitions can be generated automatically using CLI: https://www.datocms.com/cma-ts-schema
+
+type Book = ItemTypeDefinition<
+  EnvironmentSettings,
+  "UZyfjdBES8y2W2ruMEHSoA",
+  {
+    title: { type: "string" };
+    genre: { type: "string" };
+    synopsis: { type: "text" };
+    pages: { type: "integer" };
+  }
+>;
+
+async function run() {
+  // Make sure the API token has access to the CMA, and is stored securely
+  const client = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
+
+  const record = await client.items.create<Book>({
+    item_type: { type: "item_type", id: "UZyfjdBES8y2W2ruMEHSoA" },
+    title: "The JavaScript Guide",
+    genre: "Programming",
+    synopsis:
+      "A comprehensive guide to modern JavaScript.\\nPerfect for beginners and experts alike.",
+    pages: 450,
+  });
+
+  console.log(inspectItem(record));
+}
+
+run();
+
+\`\`\`
+</details>",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should filter and expand multiple matching sections 1`] = `
+[
+  {
+    "text": "<details open>
+<summary>Single-line string</summary>
+
+The field accepts \`String\` values or \`null\`.
+
+</details>
+
+<details open>
+<summary>Boolean</summary>
+
+The field accepts simple \`Boolean\` values or \`null\`.
+</details>",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should filter and expand sections in resource when expandDetails is provided 1`] = `
+[
+  {
+    "text": "<details open>
+<summary>Single-line string</summary>
+
+The field accepts \`String\` values or \`null\`.
+
+</details>",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should return empty collapsed details by default in resource 1`] = `
+[
+  {
+    "text": "DatoCMS stores the individual pieces of content you create from a model as records (for backwards compatibility the API calls these \`item\`). The shape of a record’s attributes depends on the fields defined by that record’s model — see the [Object payload](#object-payload) section for the full object payload documentation.
+
+\`\`\`json
+// A simple record
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "publication_date": "2024-01-15"
+  },
+  "relationships": {
+    "item_type": {
+      "data": { "id": "BxZ9Y2aKQVeTnM4hP8wLpD", "type": "item_type" }
+    }
+  }
+}
+\`\`\`
+
+> [!PROTIP] 📘 New to content modeling?
+> Check out the [Content Modeling Guide](/docs/content-modelling) to understand how to design models, fields, and relationships before diving into API usage.
+
+---
+
+## Field types overview
+
+###### Scalar fields
+These store basic data types (ie. strings, numbers, booleans):
+
+<details><summary>Single-line string</summary></details>
+
+<details><summary>Slug</summary></details>
+
+<details><summary>Multi-line text</summary></details>
+
+<details><summary>Boolean</summary></details>
+
+<details><summary>Integer</summary></details>
+
+<details><summary>Float</summary></details>
+
+<details><summary>Date</summary></details>
+
+<details><summary>Date time</summary></details>
+
+<details><summary>JSON</summary></details>
+
+###### Object Fields
+These require structured objects:
+
+<details><summary>Color</summary></details>
+
+
+<details><summary>Location</summary></details>
+
+<details><summary>SEO</summary></details>
+
+<details><summary>External video</summary></details>
+
+###### Reference Fields
+
+These point to other resources (either assets or other records):
+
+<details><summary>Single-asset</summary></details>
+
+<details><summary>Asset gallery</summary></details>
+
+<details><summary>Single link</summary></details>
+
+<details><summary>Multiple links</summary></details>
+
+###### Block Fields
+
+These are special fields that contain **blocks within records**:
+
+| Field Type          | What it contains                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Modular content** | An array of blocks, perfect for building dynamic page sections                                                            |
+| **Single block**    | A single block instance or \`null\`                                                                                         |
+| **Structured text** | A rich text document that can have blocks embedded within the flow of content ([DAST format](/docs/structured-text/dast)) |
+
+Blocks are **records within records** - they're separate items that live inside fields of other records.
+
+> [!PROTIP] 📚 Content Modeling Context
+> To understand when and how to design blocks vs models, see [Blocks Guide](/docs/content-modelling/blocks). For field-specific concepts, see [Modular Content](/docs/content-modelling/modular-content) and [Structured Text](/docs/content-modelling/structured-text).
+
+Blocks inside those fields are unique because they can be represented in two different ways depending on the context: as a lightweight reference (an ID) or as a full content object. Understanding this duality is key to working with them effectively:
+
+* **Block ID (Lightweight Reference)**: A simple \`String\` that uniquely identifies the block (ie. \`"dhVR2HqgRVCTGFi_0bWqLqA"\`). This is useful when you only need to know *which* block is there, not what's inside it.
+
+* **Block Object (Full Content)**: The complete record object for the block, containing its own \`id\`, \`type\`, \`attributes\`, and \`relationships\`. This is used when you need to read or modify the block's actual content.
+
+  \`\`\`json
+  {
+    "id": "dhVR2HqgRVCTGFi_0bWqLqA",
+    "type": "item",
+    "attributes": {
+      "title": "Block Title",
+      "content": "Block content..."
+    },
+    "relationships": {
+      "item_type": {
+        "data": { "id": "BxZ9Y2aKQVeTnM4hP8wLpD", "type": "item_type" }
+      }
+    }
+  }
+  \`\`\`
+
+<details><summary>Modular Content</summary></details>
+
+<details><summary>Single Block</summary></details>
+
+<details><summary>Structured Text</summary></details>
+
+---
+
+## API response modes: Regular vs. Nested
+
+When fetching record data, the API gives you control over how block fields are represented in the response. These two modes, **Regular** and **Nested**, are available on the following endpoints:
+
+* [Retrieve a single record (\`GET /items/:id\`)](/docs/content-management-api/resources/item/self)
+* [Retrieve multiple records (\`GET /items\`)](/docs/content-management-api/resources/item/instances)
+* [Retrieve records referenced by a record (\`GET /items/:id/references\`)](/docs/content-management-api/resources/item/references)
+* [Retrieve records linked to an asset (\`GET /upload/:id/references\`)](/docs/content-management-api/resources/upload/references)
+
+###### Regular mode (default)
+
+By default, the API returns block fields as IDs only. This is efficient and fast, making it ideal for listings or when you don't need the blocks' content immediately.
+
+\`\`\`json
+GET /items/A4gkL_8pTZmcyJ-IlIEd2w
+
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "content_blocks": ["dhVR2HqgRVCTGFi_0bWqLqA", "kL9mN3pQrStUvWxYzAbCdE"],
+    "featured_block": "nZ8xY2vWqTuJkL3mNcBeFg"
+  }
+}
+\`\`\`
+
+###### Nested mode (\`?nested=true\`)
+
+The same endpoint, when passing the \`?nested=true\` option, returns **block fields as full objects**. This is essential when you need to display or edit the content within the blocks.
+
+\`\`\`json
+GET /items/A4gkL_8pTZmcyJ-IlIEd2w?nested=true
+
+{
+  "id": "A4gkL_8pTZmcyJ-IlIEd2w",
+  "type": "item",
+  "attributes": {
+    "title": "My Blog Post",
+    "content_blocks": [
+      {
+        "id": "dhVR2HqgRVCTGFi_0bWqLqA",
+        "type": "item",
+        "attributes": { "title": "Hero Section", "content": "Welcome to our site" },
+        "relationships": { ... }
+      },
+      {
+        "id": "kL9mN3pQrStUvWxYzAbCdE",
+        "type": "item",
+        "attributes": { "title": "Image Gallery", "images": [...] },
+        "relationships": { ... }
+      }
+    ],
+    "featured_block": {
+      "id": "nZ8xY2vWqTuJkL3mNcBeFg",
+      "type": "item",
+      "attributes": { ... },
+      "relationships": { ... }
+    }
+  }
+}
+\`\`\`
+
+> [!WARNING] Block Fields vs. Other Reference Fields
+> Block fields are the **only** field type that change representation between modes! Asset and link fields always return IDs. To get full details for assets or linked records, you need to make separate API calls using their IDs.
+
+###### When to use each mode?
+
+| Use "Regular Mode" when...                                                                                     | Use "Nested Mode" when...                                                                     |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Listing many records or building navigation.                                                                   | Displaying or editing block content, as it provides the actual content needed.                |
+| You only need to know which blocks exist.                                                                      | You need to read the actual block content for display or updates.                             |
+| Building navigation                                                                                            | Preparing to update blocks                                                                    |
+| Performance is critical; it's faster because it returns smaller responses (block IDs instead of full content). | You are building content editing interfaces where usability is more important than raw speed. |
+
+
+---
+
+## Creating and updating blocks
+
+Working with blocks follows one fundamental constraint:
+
+**You cannot create, edit, or delete blocks directly. You must always update the parent record that contains them.**
+
+This ensures data integrity. To create/modify blocks, you send a payload to the parent record's endpoint, using a mix of Block IDs and Block Objects to describe the desired changes.
+
+###### Key rules for block operations
+
+1.  **To create a new block**: Provide the **full object**, including \`type\`, \`attributes\`, and the \`relationships.item_type\` which specifies the Block Model being used.
+2.  **To update an existing block**: Provide the **full object**, including its \`id\` and the changed \`attributes\`. You only need to include the specific attributes that you want to change - unchanged attributes will be preserved. You don't need to specify \`relationships.item_type\`.
+3.  **To keep an existing block unchanged**: Simply provide its **Block ID** string. This is the most efficient way to handle unchanged blocks.
+4.  **To delete a block**: Omit it from the payload. For a Modular Content array, remove its ID. For a Single Block field, set the value to \`null\`.
+5.  **To reorder blocks** (in Modular Content): Send an array of Block IDs in the new desired order.
+
+
+The following examples show how to apply these rules.
+
+<details><summary>Working with Modular Content Fields</summary></details>
+
+<details><summary>Working with Single Block Fields</summary></details>
+
+<details><summary>Working with Structured Text Fields</summary></details>
+
+###### Deeply-nested blocks
+
+Blocks can contain other blocks, creating hierarchies multiple levels deep. **The same principles apply recursively.** When you fetch a record with \`?nested=true\`, the API will expand nested blocks at all levels.
+
+When updating, you are always sending a payload to the top-level parent record, but you can specify changes to deeply nested blocks using the same ID vs. object rules.
+
+<details><summary>Example: Updating a nested block</summary></details>
+
+---
+
+## Localization
+
+Localization allows you to store different versions of your content for different languages or regions. When you mark a field as "localizable" in your model, its structure in the API changes to accommodate multiple values.
+
+The fundamental change is that the field's value is no longer a single piece of data but an **object keyed by locale codes**.
+
+For example, a simple non-localized \`title\` field looks like this:
+\`\`\`json
+{
+  "title": "Hello World"
+}
+\`\`\`
+
+When localized, it becomes an object containing a value for each configured locale:
+\`\`\`json
+{
+  "title": {
+    "en": "Hello World",
+    "it": "Ciao Mondo",
+    "fr": "Bonjour le Monde"
+  }
+}
+\`\`\`
+This principle applies to **every type of field**, from simple strings to **Modular Content**, **Single Block**, and **Structured Text** fields. For instance, a localized Modular Content field will contain a separate array of blocks for each language. This powerful feature allows you to have completely different block structures for each locale.
+
+<details><summary>Example: Localized Modular Content field</summary></details>
+
+<details><summary>Example: Localized Single Block field</summary></details>
+
+<details><summary>Example: Localized Structured Text field</summary></details>
+
+When reading or writing localized content, there are a few key rules to follow to ensure data integrity.
+
+###### Locale consistency
+Within a single record, all localized fields must have a consistent set of locales. You cannot have a \`title\` with English and Italian, and a \`description\` with English and French in the same record.
+
+\`\`\`json
+// ❌ This will FAIL due to inconsistent locales ("it" vs "fr")
+{
+  "title": { "en": "Title", "it": "Titolo" },
+  "description": { "en": "Description", "fr": "Description" }
+}
+
+// ✅ This is VALID because locales are consistent across all fields
+{
+  "title": { "en": "Title", "it": "Titolo" },
+  "description": { "en": "Description", "it": "Descrizione" }
+}
+\`\`\`
+
+###### Models enforcing all locales
+
+You can configure a model to require every project locale to be present for its localized fields using the [\`all_locales_required\`](/docs/content-management-api/resources/item-type#object-payload) attribute.
+
+When this setting is enabled, records **must include a key for every defined locale** within each localized field. The value for a locale can be \`null\`, but the key itself is mandatory.
+
+\`\`\`json
+// ❌ FAILS: The "it" locale is missing.
+{
+  "title": { "en": "Title" }
+}
+
+// ✅ VALID: All required locale keys ("en", "it") are present.
+{
+  "title": { "en": "Title", "it": "Titolo" }
+}
+
+// ✅ ALSO VALID: The "it" key is present, even with a \`null\` value.
+{
+  "title": { "en": "Title", "it": null }
+}
+\`\`\`
+
+---
+
+## Type-safe development with TypeScript
+
+Since DatoCMS records don't have a predetermined structure, the JavaScript client cannot provide strict TypeScript types out of the box:
+
+\`\`\`typescript
+import { buildClient } from "@datocms/cma-client-node";
+
+const client = buildClient({ apiToken: process.env.DATOCMS_API_TOKEN });
+const record = await client.items.find('dhVR2HqgRVCTGFi0bWqLqA');
+
+record.accent_color; // -> TypeScript type: unknown
+\`\`\`
+
+To get **full type-safety plus auto-completions and type hints in your code editor**, you can leverage the DatoCMS CLI to automatically generate TypeScript types based on your specific project schema.
+
+###### Generating types from your schema
+
+After [installing and configuring the CLI](https://www.datocms.com/docs/scripting-migrations/installing-the-cli), you can use the \`schema:generate\` command to generate a comprehensive TypeScript definition file describing your DatoCMS project structure (models and blocks):
+
+\`\`\`bash
+$ npx datocms schema:generate schema.ts
+\`\`\`
+
+\`\`\`typescript
+// schema.ts
+
+import type { ItemTypeDefinition } from '@datocms/cma-client';
+
+export type Article = ItemTypeDefinition<
+  '76hhD-LaS5CM3NPJw0991w', // ID of the Product model
+  {
+    name: { type: 'string'; };
+    slug: { type: 'slug'; };
+    accent_color: { type: 'color'; };
+    sections: { type: 'rich_text'; blocks: ArticleSection; };
+  }
+>;
+
+export type ArticleSection = ItemTypeDefinition<
+  'FJM79jjKRMSVg-fR6k6X2A', // ID of the ProductVariation block
+  {
+    title: { type: 'string'; };
+  }
+>;
+\`\`\`
+
+You can use the \`--item-types\` flag to only generate definitions for specific models/blocks:
+
+\`\`\`bash
+$ npx datocms schema:generate --item-types=product,article schema.ts
+\`\`\`
+
+The same type definitions can be included in your [migration scripts](/docs/scripting-migrations/scripting-migrations-with-the-datocms-cli#option-1-write-a-migration-script-manually) by using the \`migrations:new\` CLI command with \`--schema\` flag:
+
+\`\`\`bash
+# generate definitions for all the models/blocks
+$ npx datocms migrations:new 'tweak articles' --schema=all
+# only generate definitions for article and author
+$ npx datocms migrations:new 'tweak articles' --schema=article,author
+\`\`\`
+
+An \`ItemTypeDefinition\` is a minimal type blueprint for your API payloads. It only includes what's needed for typed API calls: field names, their data types, and any allowed block types. It intentionally omits details like validation rules or default values, as they don't affect the shape of the data sent to or from the API.
+
+> [!WARNING] 😉 Practical, not perfect
+> These types are designed for a practical developer experience, not perfect precision. In other words, you might still encounter API errors even if TypeScript gives you the green light. The types ensure the structure of a request is valid, but not necessarily the values within it (e.g., a string that's too long).
+
+###### Use generated types
+
+These definition types can be used as generics in all API calls related to records to get a fully typed interface:
+
+\`\`\`typescript
+import * as Schema from './schema';
+
+// Fully typed record retrieval
+const record = await client.items.find<Schema.Article>('AZUeMuPySxuJCJ8ibEVE7w');
+record.accent_color; // -> ColorFieldValue (properly typed!)
+
+// Type-safe record creation
+const record = await client.items.create<Schema.Article>({
+  item_type: { id: 'dhVR2HqgRVCTGFi0bWqLqA', type: 'item_type' },
+  accent_color: '#FF0000', // ❌ TypeScript error! Wrong format!
+});
+\`\`\`
+
+###### TypeScript type narrowing with \`__itemTypeId\`
+
+Records include a top-level \`__itemTypeId\` property to help with TypeScript's type narrowing.
+
+Since TypeScript cannot infer types from nested properties like \`record.item_type.id\`, you can use the top-level \`__itemTypeId\` in your checks. This allows TypeScript to correctly identify the specific record type, enabling type-safe access to its unique properties.
+
+\`\`\`typescript
+// ❌ This doesn't work because \`item_type.id\` is a nested property.
+if (item.item_type.id === "BxZ9Y2aKQVeTnM4hP8wLpD") {
+  // TypeScript still sees a generic item type.
+  item.attributes.headline; // Error: Property 'headline' is \`unknown\`
+}
+
+// ✅ This works because \`__itemTypeId\` is a top-level property.
+if (item.__itemTypeId === "BxZ9Y2aKQVeTnM4hP8wLpD") {
+  // TypeScript now correctly infers the type.
+  item.attributes.headline; // OK!
+}
+\`\`\`
+
+
+# Available actions
+
+- instances (List all records)
+- validate_existing (Validates an existing record field)
+- validate_new (Validates a record field)
+- create (Create a new record)
+- duplicate (Duplicate a record)
+- update (Update a record)
+- references (Referenced records)
+- self (Retrieve a record)
+- current_vs_published_state (Retrieve information regarding changes between current and published versions of the record)
+- destroy (Delete a record)
+- publish (Publish a record)
+- unpublish (Unpublish a record)
+- bulk_publish (Publish items in bulk)
+- bulk_unpublish (Unpublish items in bulk)
+- bulk_destroy (Destroy items in bulk)
+- bulk_move_to_stage (Move items to stage in bulk)
+
+# Further documentation
+
+I recommend using the \`resource_action\` tool to learn the available methods for a specific action. Do not use \`resource_action_method\` directly. Pass through \`resource_action\` first to properly understand all the available methods for the same action.",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should return empty collapsed details by default in resource_action 1`] = `
+[
+  {
+    "text": "> [!PROTIP] 📚 New to DatoCMS records?
+> Before creating your first record, we strongly recommend reading the [Introduction to Records](/docs/content-management-api/resources/item) guide. It covers fundamental concepts about field types, block manipulation, and localization that are essential for building a valid creation payload.
+
+The payload required to create a new record is determined by the specific [model](/docs/content-management-api/resources/item-type) it's based on and the [fields](/docs/content-management-api/resources/field) it contains.
+
+
+
+<details><summary>Example: Basic example</summary></details>
+
+When creating a record, you don't need to specify a value for every field. Any field you omit will be set to its configured default value, or \`null\` if no default is set.
+
+While the [Introduction to Records guide](/docs/content-management-api/resources/item) offers a complete reference for every field type, there are several key rules that are especially important when **creating** a new record.
+
+### Field value formatting
+
+Every field in your payload must be formatted according to its type. This can range from a simple string or number to a structured object. For a comprehensive breakdown of the expected format for every field type, please refer to the **[Field Types Overview](/docs/content-management-api/resources/item#field-types-overview)** in our main records guide.
+
+
+
+<details><summary>Example: Managing simple fields</summary></details>
+
+#### Block Fields
+
+When creating a record, any new blocks (for Modular Content, Single Block, or Structured Text fields) **must be provided as full block objects**. This object must include the \`item_type\` in its \`relationships\` to specify which Block Model to use. For a deeper dive into manipulating blocks, see the guide on **[Creating and Updating Blocks](/docs/content-management-api/resources/item#creating-and-updating-blocks)**.
+
+
+
+<details><summary>Example: Modular content fields</summary></details>
+
+
+<details><summary>Example: Single block fields</summary></details>
+
+
+<details><summary>Example: Structured text fields</summary></details>
+
+#### Asset & Link Fields
+
+These reference fields require specific formats. For a comprehensive breakdown of the expected format for every field type, please refer to the **[Field Types Overview](/docs/content-management-api/resources/item#field-types-overview)** in our main records guide.
+
+
+
+<details><summary>Example: Linking assets to records</summary></details>
+
+
+<details><summary>Example: Linking records to other records</summary></details>
+
+### Localization
+
+If the record's model contains localized fields, your creation payload must adhere to specific rules:
+
+- All localized fields in a single payload must specify the same set of locales to ensure consistency.
+- If the model is configured to require all locales ([\`all_locales_required\`](/docs/content-management-api/resources/item-type#object-payload)), then the payload must include a key for every available locale for each localized field. The value of a field for a locale can be \`null\`, but the key itself is mandatory.
+
+For a full explanation of how to structure localized data, refer to the [localization Guide](/docs/content-management-api/resources/item#localization).
+
+
+
+<details><summary>Example: Managing localized fields</summary></details>
+
+
+<details><summary>Example: Tree-like structure</summary></details>
+
+# Available methods (client.items.<METHOD>(<ARGS>))
+
+\`\`\`typescript
+create(body: ItemCreateSchema<NoInfer<D>>): Promise<Item<NoInfer<D>>>
+
+rawCreate(body: ItemCreateSchema<NoInfer<D>>): Promise<{ data: ItemInNestedResponse<NoInfer<D>>; included: (ItemType | Item<ItemTypeDefinition>)[]; }>
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Server without API token > should return no examples when expandDetails does not match any sections 1`] = `
+[
+  {
+    "text": "",
+    "type": "text",
+  },
+]
+`;

@@ -1,10 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { register as registerCmaJsClientResource } from "./tools/cma_js_client/resource/index.js";
-import { register as registerCmaJsClientResourceAction } from "./tools/cma_js_client/resource_action/index.js";
-import { register as registerCmaJsClientResourceActionMethod } from "./tools/cma_js_client/resource_action_method/index.js";
-import { register as registerCmaJsClientResourceActionMethodExecute } from "./tools/cma_js_client/resource_action_method_execute/index.js";
-import { register as registerCmaJsClientResources } from "./tools/cma_js_client/resources/index.js";
-import { register as registerCmaJsClientUsageRules } from "./tools/cma_js_client/usage_rules/index.js";
+import { register as registerResource } from "./tools/resource/index.js";
+import { register as registerResourceAction } from "./tools/resource_action/index.js";
+import { register as registerResourceActionMethod } from "./tools/resource_action_method/index.js";
+import { register as registerResourceActionMethodExecute } from "./tools/resource_action_metod_execute/index.js";
+import { register as registerResources } from "./tools/resources/index.js";
+import { register as registerSchemaInfo } from "./tools/schema_info/index.js";
+import { register as registerCreateScript } from "./tools/scripts/create_script.js";
+import { register as registerExecuteScript } from "./tools/scripts/execute_script.js";
+import { register as registerUpdateScript } from "./tools/scripts/update_script.js";
+import { register as registerViewScript } from "./tools/scripts/view_script.js";
 
 export function createServer(apiToken: string | undefined) {
 	const server = new McpServer({
@@ -12,14 +16,18 @@ export function createServer(apiToken: string | undefined) {
 		version: "1.0.0",
 	});
 
-	registerCmaJsClientUsageRules(server);
-	registerCmaJsClientResources(server);
-	registerCmaJsClientResource(server);
-	registerCmaJsClientResourceAction(server);
-	registerCmaJsClientResourceActionMethod(server);
+	registerResources(server);
+	registerResource(server);
+	registerResourceAction(server);
+	registerResourceActionMethod(server);
+	registerCreateScript(server, apiToken);
+	registerUpdateScript(server, apiToken);
+	registerViewScript(server);
 
 	if (apiToken) {
-		registerCmaJsClientResourceActionMethodExecute(server, apiToken);
+		registerSchemaInfo(server, apiToken);
+		registerResourceActionMethodExecute(server, apiToken);
+		registerExecuteScript(server);
 	}
 
 	return server;

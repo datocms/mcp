@@ -162,16 +162,15 @@ The DatoCMS MCP server provides the following tools:
 
 #### Documentation & Exploration Tools
 
-- **cma_js_client_usage_rules**: General usage guidelines for the MCP
-- **cma_js_client_resources**: List all available DatoCMS API resources
-- **cma_js_client_resource**: Get details about a specific resource (e.g., items, assets)
-- **cma_js_client_resource_action**: Show available actions for a resource
-- **cma_js_client_resource_action_method**: Get detailed method documentation with examples
+- **resources**: List all available DatoCMS API resources
+- **resource**: Get details about a specific resource (e.g., items, assets)
+- **resource_action**: Show available actions for a resource
+- **resource_action_method**: Get detailed method documentation with examples
 
 #### Execution Tools (require an API token with appropriate permission)
 
-- **cma_js_client_resource_action_readonly_method_execute**: Perform an read-only operation to the project
-- **cma_js_client_resource_action_destructive_method_execute**: Perform destructive operation to the project (create, update, destroy, etc.)
+- **resource_action_readonly_method_execute**: Perform an read-only operation to the project
+- **resource_action_destructive_method_execute**: Perform destructive operation to the project (create, update, destroy, etc.)
 
 
 ## License
