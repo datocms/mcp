@@ -4,6 +4,7 @@ import jq from "node-jq";
 import { serializeError } from "serialize-error";
 import z from "zod";
 import { extractResourcesEndpointMethods } from "../../lib/code_analysis/extractEndpointMethods.js";
+import { MAX_OUTPUT_BYTES } from "../../lib/config.js";
 import { invariant } from "../../lib/invariant.js";
 import { h1, p, pre, render } from "../../lib/markdown.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
@@ -37,7 +38,7 @@ export function register(server: McpServer, apiToken: string) {
 						" client method.",
 					),
 					p(
-						"The output will be capped to 5k chars, so if you foresee that the output may be large, immediately pass a jqSelector to reduce the output",
+						`The output will be capped to ${MAX_OUTPUT_BYTES} bytes, so if you foresee that the output may be large, immediately pass a jqSelector to reduce the output`,
 					),
 				),
 				inputSchema: {
@@ -129,26 +130,27 @@ export function register(server: McpServer, apiToken: string) {
 
 				try {
 					const result = await client[namespace][method](...args);
-					const serialized = jqSelector
+					let serialized = jqSelector
 						? ((await jq.run(jqSelector, result, {
 								input: "json",
 								output: "pretty",
 							})) as string)
 						: JSON.stringify(result, null, 2);
-					const lines = serialized.split(`\n`);
+
+					const isTruncated = serialized.length > MAX_OUTPUT_BYTES;
+					if (isTruncated) {
+						serialized = `${serialized.slice(0, MAX_OUTPUT_BYTES)}\n...[truncated]`;
+					}
 
 					return render(
-						...(lines.length > 500
+						...(isTruncated
 							? [
 									p("The response is too lengthy!"),
-									h1("First 500 lines of the response:"),
+									h1(`First ${MAX_OUTPUT_BYTES} bytes of the response:`),
 									p(
 										"If the method is idempotent, you may optionally use it to repeat your request with a `jqSelector` argument in order to reduce the response length:",
 									),
-									pre(
-										{ language: "json" },
-										serialized.split(`\n`).slice(0, 500).join("\n"),
-									),
+									pre({ language: "json" }, serialized),
 								]
 							: [pre({ language: "json" }, serialized)]),
 					);

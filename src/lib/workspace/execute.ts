@@ -1,4 +1,5 @@
 import { buildClient } from "@datocms/cma-client-node";
+import { SCRIPT_TIMEOUT_MS, MAX_OUTPUT_BYTES } from "../config.js";
 import { code, h1, h2, p, pre, render } from "../markdown.js";
 import type { Script } from "../scripts/storage.js";
 import { viewScript } from "../scripts/storage.js";
@@ -56,7 +57,11 @@ export async function executeAndRender(
 	successPrefix: string = "Script executed",
 	failurePrefix: string = "Script execution",
 ): Promise<string> {
-	const result = await wm.executeScript(script, { apiToken });
+	const result = await wm.executeScript(script, {
+		apiToken,
+		timeoutMs: SCRIPT_TIMEOUT_MS,
+		maxStdoutBytes: MAX_OUTPUT_BYTES,
+	});
 
 	if (result.success) {
 		return render(

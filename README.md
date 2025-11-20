@@ -127,9 +127,11 @@ Follow Windsurf MCP [documentation](https://docs.windsurf.com/windsurf/cascade/m
 
 ### Configuration
 
-The DatoCMS MCP server supports one optional environment variable:
+The DatoCMS MCP server supports the following environment variables:
 
 - `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables full access including schema introspection, API execution, and script execution. Without this token, only API documentation and exploration tools are available, along with the ability to create and validate scripts (but not execute them).
+- `EXECUTION_TIMEOUT_SECONDS` (optional): Script execution timeout in seconds. Defaults to 60 seconds.
+- `MAX_OUTPUT_BYTES` (optional): Maximum output size in bytes for all executions. Defaults to 2048 bytes (2 KB).
 
 **With API token** (full project access):
 ```js

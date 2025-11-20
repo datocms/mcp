@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { buildClient, type Client } from "@datocms/cma-client-node";
 import dedent from "dedent";
 import envPaths from "env-paths";
+import { SCRIPT_TIMEOUT_MS, MAX_OUTPUT_BYTES } from "../config.js";
 import { memoized } from "../memoized.js";
 import type { Script } from "../scripts/storage.js";
 import { withLock } from "./locks.js";
@@ -163,8 +164,8 @@ export class Workspace {
 		);
 
 		try {
-			const timeoutMs = opts?.timeoutMs ?? 60_000;
-			const maxStdout = opts?.maxStdoutBytes ?? 2 * 1024;
+			const timeoutMs = opts?.timeoutMs ?? SCRIPT_TIMEOUT_MS;
+			const maxStdout = opts?.maxStdoutBytes ?? MAX_OUTPUT_BYTES;
 
 			return await new Promise<ExecutionResult>((resolve) => {
 				const runnerPath = path.join(this.rootPath, "runner.ts");
