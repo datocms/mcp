@@ -77,11 +77,9 @@ export default async function run(client: Client) {
 
 			createScript("script://test-update.ts", initialScript);
 
-			const result = updateScript(
-				"script://test-update.ts",
-				"items.list()",
-				"items.find('123')",
-			);
+			const result = updateScript("script://test-update.ts", [
+				{ oldStr: "items.list()", newStr: "items.find('123')" },
+			]);
 
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);
@@ -103,11 +101,9 @@ export default async function run(client: Client) {
 			createScript("script://test-update-invalid.ts", initialScript);
 
 			// Remove the export statement, making it invalid
-			const result = updateScript(
-				"script://test-update-invalid.ts",
-				"export default",
-				"",
-			);
+			const result = updateScript("script://test-update-invalid.ts", [
+				{ oldStr: "export default", newStr: "" },
+			]);
 
 			expect(result.valid).toBe(false);
 			expect(result.errors.length).toBeGreaterThan(0);
@@ -119,7 +115,7 @@ export default async function run(client: Client) {
 
 		it("should throw error if script not found", () => {
 			expect(() => {
-				updateScript("non-existent", "foo", "bar");
+				updateScript("non-existent", [{ oldStr: "foo", newStr: "bar" }]);
 			}).toThrow("not found");
 		});
 
@@ -132,11 +128,9 @@ export default async function run(client: Client) { return true; }
 			createScript("script://test-not-found.ts", script);
 
 			expect(() => {
-				updateScript(
-					"script://test-not-found.ts",
-					"non-existent-string",
-					"replacement",
-				);
+				updateScript("script://test-not-found.ts", [
+					{ oldStr: "non-existent-string", newStr: "replacement" },
+				]);
 			}).toThrow("String not found");
 		});
 
@@ -154,7 +148,9 @@ export default async function run(client: Client) {
 			createScript("script://test-multiple.ts", script);
 
 			expect(() => {
-				updateScript("script://test-multiple.ts", "true", "false");
+				updateScript("script://test-multiple.ts", [
+					{ oldStr: "true", newStr: "false" },
+				]);
 			}).toThrow("must be unique");
 		});
 	});

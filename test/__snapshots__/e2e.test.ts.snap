@@ -1,5 +1,115 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`MCP Server E2E Tests > Script tools > should handle start_line beyond script length 1`] = `
+[
+  {
+    "text": "Error: start_line 1000 is beyond the end of the script (14 lines total)",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Script tools > should handle viewing last few lines of script 1`] = `
+[
+  {
+    "text": "Showing lines 12-14 of 14
+
+
+
+\`\`\`typescript
+    12→    console.log('Item ID:', item.id);
+    13→  }
+    14→}
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Script tools > should view full script without line range arguments 1`] = `
+[
+  {
+    "text": "\`\`\`typescript
+import { type Client } from '@datocms/cma-client-node';
+
+export default async function (client: Client) {
+  // Line 4: Test function
+  const items = await client.items.list();
+
+  // Line 7: Log results
+  console.log('Total items:', items.length);
+
+  // Line 10: Process items
+  for (const item of items) {
+    console.log('Item ID:', item.id);
+  }
+}
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Script tools > should view script with both start_line and limit 1`] = `
+[
+  {
+    "text": "Showing lines 4-6 of 14
+
+
+
+\`\`\`typescript
+     4→  // Line 4: Test function
+     5→  const items = await client.items.list();
+     6→
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Script tools > should view script with limit only 1`] = `
+[
+  {
+    "text": "Showing lines 1-5 of 14
+
+
+
+\`\`\`typescript
+     1→import { type Client } from '@datocms/cma-client-node';
+     2→
+     3→export default async function (client: Client) {
+     4→  // Line 4: Test function
+     5→  const items = await client.items.list();
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
+exports[`MCP Server E2E Tests > Script tools > should view script with start_line only 1`] = `
+[
+  {
+    "text": "Showing lines 5-14 of 14
+
+
+
+\`\`\`typescript
+     5→  const items = await client.items.list();
+     6→
+     7→  // Line 7: Log results
+     8→  console.log('Total items:', items.length);
+     9→
+    10→  // Line 10: Process items
+    11→  for (const item of items) {
+    12→    console.log('Item ID:', item.id);
+    13→  }
+    14→}
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
 exports[`MCP Server E2E Tests > Server without API token > should call resource with valid resource name 1`] = `
 [
   {

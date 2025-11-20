@@ -37,10 +37,14 @@ export function createScript(name: string, content: string): ValidationResult {
 	return validation;
 }
 
+export interface Replacement {
+	oldStr: string;
+	newStr: string;
+}
+
 export function updateScript(
 	name: string,
-	oldStr: string,
-	newStr: string,
+	replacements: Replacement[],
 ): ValidationResult {
 	const script = scripts.get(name);
 
@@ -48,21 +52,34 @@ export function updateScript(
 		throw new Error(`Script '${name}' not found`);
 	}
 
-	// Count occurrences of oldStr
-	const occurrences = script.content.split(oldStr).length - 1;
-
-	if (occurrences === 0) {
-		throw new Error(`String not found in script '${name}'`);
+	if (replacements.length === 0) {
+		throw new Error("At least one replacement must be provided");
 	}
 
-	if (occurrences > 1) {
-		throw new Error(
-			`String appears ${occurrences} times in script '${name}'. It must be unique.`,
-		);
-	}
+	let updatedContent = script.content;
 
-	// Replace the string
-	const updatedContent = script.content.replace(oldStr, newStr);
+	// Apply each replacement sequentially
+	for (const [index, replacement] of replacements.entries()) {
+		const { oldStr, newStr } = replacement;
+
+		// Count occurrences of oldStr
+		const occurrences = updatedContent.split(oldStr).length - 1;
+
+		if (occurrences === 0) {
+			throw new Error(
+				`Replacement ${index + 1}: String not found in script '${name}'`,
+			);
+		}
+
+		if (occurrences > 1) {
+			throw new Error(
+				`Replacement ${index + 1}: String appears ${occurrences} times in script '${name}'. It must be unique.`,
+			);
+		}
+
+		// Replace the string
+		updatedContent = updatedContent.replace(oldStr, newStr);
+	}
 
 	// Validate the updated script format (but don't block saving)
 	const validation = validateScriptStructure(updatedContent);

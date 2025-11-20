@@ -312,4 +312,133 @@ describe("MCP Server E2E Tests", () => {
 			await client2.close();
 		});
 	});
+
+	describe("Script tools", () => {
+		const testScriptName = "script://test-script.ts";
+		const testScriptContent = `import { type Client } from '@datocms/cma-client-node';
+
+export default async function (client: Client) {
+  // Line 4: Test function
+  const items = await client.items.list();
+
+  // Line 7: Log results
+  console.log('Total items:', items.length);
+
+  // Line 10: Process items
+  for (const item of items) {
+    console.log('Item ID:', item.id);
+  }
+}`;
+
+		beforeEach(async () => {
+			// Start server as subprocess
+			transport = new StdioClientTransport({
+				command: "node",
+				args: ["./bin/stdio"],
+			});
+
+			client = new Client(
+				{
+					name: "test-client",
+					version: "1.0.0",
+				},
+				{
+					capabilities: {},
+				},
+			);
+
+			await client.connect(transport);
+
+			// Create a test script
+			await client.callTool({
+				name: "create_script",
+				arguments: {
+					name: testScriptName,
+					content: testScriptContent,
+				},
+			});
+		});
+
+		afterEach(async () => {
+			await client.close();
+		});
+
+		it("should view full script without line range arguments", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+
+		it("should view script with start_line only", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+					start_line: 5,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+
+		it("should view script with limit only", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+					limit: 5,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+
+		it("should view script with both start_line and limit", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+					start_line: 4,
+					limit: 3,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+
+		it("should handle start_line beyond script length", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+					start_line: 1000,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+
+		it("should handle viewing last few lines of script", async () => {
+			const result = await client.callTool({
+				name: "view_script",
+				arguments: {
+					name: testScriptName,
+					start_line: 12,
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toMatchSnapshot();
+		});
+	});
 });
