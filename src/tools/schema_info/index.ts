@@ -45,7 +45,7 @@ export function register(server: McpServer, apiToken: string) {
 					])
 					.default("basic")
 					.describe(
-						'Include field details. Use "basic" (default) to exclude validators, appearance, and default values, "complete" to include all details (VERY VERBOSE!), or specify which to include (e.g., ["validators", "appearance"]). This directive also applies recursively to nested blocks, referenced models, and embedding models when those options are enabled.',
+						'Include field details. Use "basic" (default) to exclude validators, appearance, and default values; "complete" to include everything (⚠️ VERY VERBOSE!); or specify which to include (e.g., ["validators", "appearance"]). Applies recursively to nested blocks, referenced models, and embedding models. Avoid "complete" unless absolutely necessary—it can produce extremely large output.',
 					),
 				include_fieldsets: z
 					.boolean()

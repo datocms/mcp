@@ -17,7 +17,9 @@ A local Model Context Protocol (MCP) server that provides AI assistants with too
 ### Key Features
 
 - **Comprehensive API exploration**. Browse all DatoCMS resources, actions, and methods with live documentation.
+- **Schema introspection**. Access detailed information about your project's content models, fields, and relationships.
 - **Safe execution environment**. Built-in usage rules and guardrails prevent API misuse.
+- **Script management**. Create, store, and execute TypeScript scripts for complex operations and automation.
 - **Optional project access**. Use with or without API token for documentation vs. execution capabilities.
 
 ### Requirements
@@ -127,7 +129,7 @@ Follow Windsurf MCP [documentation](https://docs.windsurf.com/windsurf/cascade/m
 
 The DatoCMS MCP server supports one optional environment variable:
 
-- `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables read/write operations on your DatoCMS project. Without this token, only general knowledge and API documentation tools are available.
+- `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables full access including schema introspection, API execution, and script execution. Without this token, only API documentation and exploration tools are available, along with the ability to create, view, and update scripts (but not execute them).
 
 **With API token** (full project access):
 ```js
@@ -167,11 +169,50 @@ The DatoCMS MCP server provides the following tools:
 - **resource_action**: Show available actions for a resource
 - **resource_action_method**: Get detailed method documentation with examples
 
-#### Execution Tools (require an API token with appropriate permission)
+#### Schema Tools (require an API token)
 
-- **resource_action_readonly_method_execute**: Perform an read-only operation to the project
-- **resource_action_destructive_method_execute**: Perform destructive operation to the project (create, update, destroy, etc.)
+- **schema_info**: Get detailed information about DatoCMS models and modular blocks, including fields, fieldsets, nested blocks, and relationships
 
+#### API Execution Tools (require an API token)
+
+- **resource_action_readonly_method_execute**: Execute read-only operations (e.g., list, find, raw queries)
+- **resource_action_destructive_method_execute**: Execute write operations (e.g., create, update, destroy)
+
+#### Script Management Tools
+
+- **create_script**: Create and store TypeScript scripts that can interact with the DatoCMS API
+- **view_script**: View the content of a previously created script
+- **update_script**: Update an existing script
+- **execute_script**: Run a script against your DatoCMS project (requires an API token)
+
+### Security
+
+The DatoCMS MCP server implements multiple layers of security to prevent prompt injection and malicious code execution:
+
+#### Script Validation
+
+All scripts created through the `create_script` and `update_script` tools undergo strict structural validation before being stored or executed:
+
+1. **Package Whitelist**: Scripts can only import from explicitly allowed packages:
+   - `@datocms/*` - DatoCMS official packages
+   - `datocms-*` - DatoCMS-prefixed packages
+   - `./schema` - Local schema definitions
+
+   Any attempt to import from other packages (e.g., `fs`, `child_process`, `net`) will be rejected.
+
+2. **Enforced Function Signature**: Scripts must export a default async function with exactly one parameter of type `Client`:
+   ```typescript
+   export default async function(client: Client): Promise<void> {
+     // Script code here
+   }
+   ```
+   This ensures scripts can only interact with the DatoCMS API through the provided client, with no access to Node.js system APIs.
+
+3. **Type Safety**: Scripts cannot use `any` or `unknown` types. This prevents type-unsafe operations and encourages developers to use proper type definitions from the schema.
+
+4. **AST-Level Validation**: The server uses TypeScript's compiler API to parse and validate the script's Abstract Syntax Tree (AST), ensuring structural requirements are met before any code execution.
+
+These validations are performed at script creation/update time, preventing malicious code from ever being stored or executed. For implementation details, see [src/lib/scripts/validation.ts](src/lib/scripts/validation.ts).
 
 ## License
 
