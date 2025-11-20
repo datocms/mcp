@@ -1,5 +1,5 @@
 import { buildClient } from "@datocms/cma-client-node";
-import { SCRIPT_TIMEOUT_MS, MAX_OUTPUT_BYTES } from "../config.js";
+import { MAX_OUTPUT_BYTES, SCRIPT_TIMEOUT_MS } from "../config.js";
 import { code, h1, h2, p, pre, render } from "../markdown.js";
 import type { Script } from "../scripts/storage.js";
 import { viewScript } from "../scripts/storage.js";

@@ -25,9 +25,7 @@ export function register(server: McpServer, apiToken?: string) {
 						code("old_str"),
 						" must appear exactly once in the script at the time it's processed",
 					),
-					li(
-						"Replacements are applied sequentially in the order provided",
-					),
+					li("Replacements are applied sequentially in the order provided"),
 					li(
 						"Pass an empty ",
 						code("new_str"),
@@ -40,7 +38,10 @@ export function register(server: McpServer, apiToken?: string) {
 					"The updated script will be validated to ensure it still follows the required format:",
 				),
 				ol(
-					li("Only imports from these packages are allowed: ", allowedPackagesStr),
+					li(
+						"Only imports from these packages are allowed: ",
+						allowedPackagesStr,
+					),
 					li(
 						"Must export a default async function that takes exactly one parameter of type ",
 						code("Client"),
