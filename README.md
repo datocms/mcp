@@ -129,7 +129,7 @@ Follow Windsurf MCP [documentation](https://docs.windsurf.com/windsurf/cascade/m
 
 The DatoCMS MCP server supports one optional environment variable:
 
-- `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables full access including schema introspection, API execution, and script execution. Without this token, only API documentation and exploration tools are available, along with the ability to create, view, and update scripts (but not execute them).
+- `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables full access including schema introspection, API execution, and script execution. Without this token, only API documentation and exploration tools are available, along with the ability to create and validate scripts (but not execute them).
 
 **With API token** (full project access):
 ```js
