@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildClient, type Client } from "@datocms/cma-client-node";
+import type { Client } from "@datocms/cma-client-node";
 import dedent from "dedent";
 import envPaths from "env-paths";
 import { MAX_OUTPUT_BYTES, SCRIPT_TIMEOUT_MS } from "../config.js";
@@ -151,16 +151,15 @@ export class Workspace {
 	async executeScript(
 		script: Script,
 		opts: {
-			apiToken: string;
+			client: Client;
 			timeoutMs?: number;
 			maxStdoutBytes?: number;
 		},
 	): Promise<ExecutionResult> {
-		const client = buildClient({ apiToken: opts.apiToken });
 		const filePath = await writeTempScriptAndSchema(
 			this.scriptsPath,
 			script,
-			client,
+			opts.client,
 		);
 
 		try {
@@ -174,7 +173,8 @@ export class Workspace {
 					cwd: this.rootPath,
 					env: {
 						...process.env,
-						DATOCMS_API_TOKEN: opts.apiToken,
+						DATOCMS_API_TOKEN: opts.client.config.apiToken || undefined,
+						DATOCMS_ENVIRONMENT: opts.client.config.environment,
 					},
 				});
 
@@ -314,6 +314,7 @@ export class Workspace {
       async function main() {
         const scriptPath = process.argv[2];
         const apiToken = process.env['DATOCMS_API_TOKEN'];
+        const environment = process.env['DATOCMS_ENVIRONMENT'];
 
         if (!scriptPath) {
           console.error(
@@ -332,7 +333,7 @@ export class Workspace {
           process.exit(2);
         }
 
-        const client = buildClient({ apiToken });
+        const client = buildClient({ apiToken, environment });
 
         // normalize to file:// to allow dynamic import in node ESM
         const scriptUrl = scriptPath.startsWith('file://')

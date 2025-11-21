@@ -73,7 +73,9 @@ export function updateScript(
 
 		if (occurrences > 1) {
 			throw new Error(
-				`Replacement ${index + 1}: String appears ${occurrences} times in script '${name}'. It must be unique.`,
+				`Replacement ${
+					index + 1
+				}: String appears ${occurrences} times in script '${name}'. It must be unique.`,
 			);
 		}
 
@@ -91,7 +93,7 @@ export function updateScript(
 	return validation;
 }
 
-export function viewScript(name: string): Script {
+export function getScript(name: string): Script {
 	const script = scripts.get(name);
 
 	if (!script) {

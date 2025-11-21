@@ -1,9 +1,11 @@
 import type { ApiTypes } from "@datocms/cma-client";
-import { Client, SchemaRepository } from "@datocms/cma-client-node";
+import { SchemaRepository } from "@datocms/cma-client-node";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { encode } from "@toon-format/toon";
 import z from "zod";
+import { datocmsClient } from "../../lib/config.js";
 import { fuzzyScore } from "../../lib/fuzzyScore.js";
+import { invariant } from "../../lib/invariant.js";
 import { pre, render } from "../../lib/markdown.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
@@ -15,7 +17,7 @@ type SchemaInfoResult = {
 
 type FieldDetailsOption = "validators" | "appearance" | "default_values";
 
-export function register(server: McpServer, apiToken: string) {
+export function register(server: McpServer) {
 	simplifiedRegisterTool(
 		server,
 		"schema_info",
@@ -72,8 +74,9 @@ export function register(server: McpServer, apiToken: string) {
 			},
 		},
 		async (args) => {
-			const client = new Client({ apiToken });
-			const repo = new SchemaRepository(client);
+			invariant(datocmsClient);
+
+			const repo = new SchemaRepository(datocmsClient);
 
 			// Pre-fetch everything for efficiency
 			await repo.prefetchAllModelsAndFields();

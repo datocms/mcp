@@ -110,7 +110,7 @@ exports[`MCP Server E2E Tests > Script tools > should view script with start_lin
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource with valid resource name 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource with valid resource name 1`] = `
 [
   {
     "text": "DatoCMS stores the individual pieces of content you create from a model as records (for backwards compatibility the API calls these \`item\`). The shape of a record’s attributes depends on the fields defined by that record’s model — see the [Object payload](#object-payload) section for the full object payload documentation.
@@ -549,7 +549,7 @@ I recommend using the \`resource_action\` tool to learn the available methods fo
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource_action with itemTypes and instances action 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource_action with itemTypes and instances action 1`] = `
 [
   {
     "text": "# Available methods (client.itemTypes.<METHOD>(<ARGS>))
@@ -564,7 +564,7 @@ rawList(): Promise<ItemTypeInstancesTargetSchema>
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource_action with valid resource and action 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource_action with valid resource and action 1`] = `
 [
   {
     "text": "> [!PROTIP] 📚 New to DatoCMS records?
@@ -641,7 +641,7 @@ rawCreate(body: ItemCreateSchema<NoInfer<D>>): Promise<{ data: ItemInNestedRespo
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with specific expandTypes 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource_action_method with specific expandTypes 1`] = `
 [
   {
     "text": "\`\`\`typescript
@@ -715,7 +715,7 @@ export type FileFieldValue = {
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with valid resource and method /2 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource_action_method with valid resource and method /2 1`] = `
 [
   {
     "text": "\`\`\`typescript
@@ -1958,7 +1958,7 @@ export type FieldsetIdentity = string;
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with valid resource and method 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resource_action_method with valid resource and method 1`] = `
 [
   {
     "text": "\`\`\`typescript
@@ -2178,7 +2178,7 @@ type FieldDefinitionToFieldValue<T extends FieldDefinition, Locales extends stri
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should call resources successfully 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should call resources successfully 1`] = `
 [
   {
     "text": "# Available resources grouped by theme
@@ -2279,7 +2279,7 @@ Use the \`resource\` tool to learn about a specific resource and all the availab
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should filter and expand example in resource_action when expandDetails is provided 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should filter and expand example in resource_action when expandDetails is provided 1`] = `
 [
   {
     "text": "<details open>
@@ -2333,7 +2333,7 @@ run();
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should filter and expand multiple matching sections 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should filter and expand multiple matching sections 1`] = `
 [
   {
     "text": "<details open>
@@ -2353,7 +2353,7 @@ The field accepts simple \`Boolean\` values or \`null\`.
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should filter and expand sections in resource when expandDetails is provided 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should filter and expand sections in resource when expandDetails is provided 1`] = `
 [
   {
     "text": "<details open>
@@ -2367,7 +2367,7 @@ The field accepts \`String\` values or \`null\`.
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should return empty collapsed details by default in resource 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should return empty collapsed details by default in resource 1`] = `
 [
   {
     "text": "DatoCMS stores the individual pieces of content you create from a model as records (for backwards compatibility the API calls these \`item\`). The shape of a record’s attributes depends on the fields defined by that record’s model — see the [Object payload](#object-payload) section for the full object payload documentation.
@@ -2806,7 +2806,7 @@ I recommend using the \`resource_action\` tool to learn the available methods fo
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should return empty collapsed details by default in resource_action 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should return empty collapsed details by default in resource_action 1`] = `
 [
   {
     "text": "> [!PROTIP] 📚 New to DatoCMS records?
@@ -2883,7 +2883,7 @@ rawCreate(body: ItemCreateSchema<NoInfer<D>>): Promise<{ data: ItemInNestedRespo
 ]
 `;
 
-exports[`MCP Server E2E Tests > Server without API token > should return no examples when expandDetails does not match any sections 1`] = `
+exports[`MCP Server E2E Tests > Tool calls > should return no examples when expandDetails does not match any sections 1`] = `
 [
   {
     "text": "",

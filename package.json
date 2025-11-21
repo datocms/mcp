@@ -11,7 +11,8 @@
 		"test": "npm run build && vitest run",
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
-		"start": "npm run build && ./bin/stdio"
+		"start": "npm run build && ./bin/stdio",
+		"build:mcpb": "./scripts/build-mcpb.sh"
 	},
 	"author": "Stefano Verna (s.verna@datocms.com)",
 	"license": "MIT",
@@ -38,7 +39,6 @@
 	},
 	"dependencies": {
 		"@apidevtools/json-schema-ref-parser": "^14.1.1",
-		"@datocms/cli": "^3.1.11",
 		"@datocms/cma-client-node": "^5.1.29",
 		"@modelcontextprotocol/sdk": "^1.15.1",
 		"@toon-format/toon": "^1.0.0",
@@ -52,16 +52,12 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@types/cors": "^2.8.19",
-		"@types/express": "^5.0.3",
+		"@anthropic-ai/mcpb": "^2.0.1",
 		"@types/node": "^24.0.14",
 		"@vitest/ui": "^4.0.8",
-		"cors": "^2.8.5",
 		"dotenv": "^16.6.1",
-		"express": "^5.1.0",
 		"np": "^10.2.0",
 		"rimraf": "^6.0.1",
-		"vitest": "^4.0.8",
-		"winston": "^3.17.0"
+		"vitest": "^4.0.8"
 	}
 }

@@ -10,43 +10,42 @@ function getTextContent(result: any): TextContent[] {
 	return result.content as TextContent[];
 }
 
+function getInheritedEnv(): Record<string, string> {
+	const env: Record<string, string> = {};
+	for (const [key, value] of Object.entries(process.env)) {
+		if (value !== undefined) env[key] = value;
+	}
+	return env;
+}
+
+async function createMcpClient() {
+	const transport = new StdioClientTransport({
+		command: "node",
+		args: ["./bin/stdio"],
+		env: getInheritedEnv(),
+	});
+
+	const client = new Client(
+		{ name: "test-client", version: "1.0.0" },
+		{ capabilities: {} },
+	);
+
+	await client.connect(transport);
+	return client;
+}
+
 describe("MCP Server E2E Tests", () => {
 	let client: Client;
-	let transport: StdioClientTransport;
 
-	describe("Server without API token", () => {
-		beforeEach(async () => {
-			// Start server as subprocess without API token
-			const env: Record<string, string> = {};
-			for (const [key, value] of Object.entries(process.env)) {
-				if (key !== "DATOCMS_API_TOKEN" && value !== undefined) {
-					env[key] = value;
-				}
-			}
+	beforeEach(async () => {
+		client = await createMcpClient();
+	});
 
-			transport = new StdioClientTransport({
-				command: "node",
-				args: ["./bin/stdio"],
-				env,
-			});
+	afterEach(async () => {
+		await client.close();
+	});
 
-			client = new Client(
-				{
-					name: "test-client",
-					version: "1.0.0",
-				},
-				{
-					capabilities: {},
-				},
-			);
-
-			await client.connect(transport);
-		});
-
-		afterEach(async () => {
-			await client.close();
-		});
-
+	describe("Tool calls", () => {
 		it("should call resources successfully", async () => {
 			const result = await client.callTool({
 				name: "resources",
@@ -261,77 +260,6 @@ describe("MCP Server E2E Tests", () => {
 		});
 	});
 
-	describe("Server initialization", () => {
-		it("should connect and initialize successfully", async () => {
-			transport = new StdioClientTransport({
-				command: "node",
-				args: ["./bin/stdio"],
-			});
-
-			client = new Client(
-				{
-					name: "test-client",
-					version: "1.0.0",
-				},
-				{
-					capabilities: {},
-				},
-			);
-
-			await expect(client.connect(transport)).resolves.not.toThrow();
-
-			// Verify server info
-			const serverInfo = client.getServerVersion();
-			expect(serverInfo).toBeDefined();
-
-			await client.close();
-		});
-
-		it("should handle multiple sequential connections", async () => {
-			// First connection
-			transport = new StdioClientTransport({
-				command: "node",
-				args: ["./bin/stdio"],
-			});
-
-			client = new Client(
-				{
-					name: "test-client-1",
-					version: "1.0.0",
-				},
-				{
-					capabilities: {},
-				},
-			);
-
-			await client.connect(transport);
-			const result1 = await client.listTools();
-			expect(result1.tools.length).toBeGreaterThan(0);
-			await client.close();
-
-			// Second connection
-			const transport2 = new StdioClientTransport({
-				command: "node",
-				args: ["./bin/stdio"],
-			});
-
-			const client2 = new Client(
-				{
-					name: "test-client-2",
-					version: "1.0.0",
-				},
-				{
-					capabilities: {},
-				},
-			);
-
-			await client2.connect(transport2);
-			const result2 = await client2.listTools();
-			expect(result2.tools.length).toBeGreaterThan(0);
-			await client2.close();
-		});
-	});
-
 	describe("Script tools", () => {
 		const testScriptName = "script://test-script.ts";
 		const testScriptContent = `import { type Client } from '@datocms/cma-client-node';
@@ -350,24 +278,6 @@ export default async function (client: Client) {
 }`;
 
 		beforeEach(async () => {
-			// Start server as subprocess
-			transport = new StdioClientTransport({
-				command: "node",
-				args: ["./bin/stdio"],
-			});
-
-			client = new Client(
-				{
-					name: "test-client",
-					version: "1.0.0",
-				},
-				{
-					capabilities: {},
-				},
-			);
-
-			await client.connect(transport);
-
 			// Create a test script
 			await client.callTool({
 				name: "create_script",
@@ -376,10 +286,6 @@ export default async function (client: Client) {
 					content: testScriptContent,
 				},
 			});
-		});
-
-		afterEach(async () => {
-			await client.close();
 		});
 
 		it("should view full script without line range arguments", async () => {

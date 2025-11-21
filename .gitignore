@@ -1,2 +1,5 @@
 dist
+dxt-dist
+*.dxt
+*.mcpb
 .env.local

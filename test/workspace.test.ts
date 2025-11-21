@@ -66,7 +66,7 @@ describe("Workspace", () => {
           `),
 				},
 				{
-					apiToken: process.env.DATOCMS_API_TOKEN!,
+					client: buildClient({ apiToken: process.env.DATOCMS_API_TOKEN! }),
 				},
 			);
 

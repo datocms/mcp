@@ -3,10 +3,11 @@ import { createServer } from "./server.js";
 
 const main = async (): Promise<void> => {
 	try {
-		const server = createServer(process.env.DATOCMS_API_TOKEN);
+		const server = createServer();
 		const transport = new StdioServerTransport();
 		server.connect(transport);
-	} catch (_error) {
+	} catch (error) {
+		console.error(error);
 		process.exit(1);
 	}
 };

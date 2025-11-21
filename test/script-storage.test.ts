@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	createScript,
+	getScript,
 	updateScript,
-	viewScript,
 } from "../src/lib/scripts/storage.js";
 
 // Mock the scripts storage by importing and clearing it before each test
@@ -25,7 +25,7 @@ export default async function run(client: Client) {
 			expect(result.errors).toHaveLength(0);
 
 			// Verify the script was saved
-			const saved = viewScript("script://test-valid.ts");
+			const saved = getScript("script://test-valid.ts");
 			expect(saved.name).toBe("script://test-valid.ts");
 			expect(saved.content).toBe(validScript);
 		});
@@ -45,7 +45,7 @@ function run(client) {
 			expect(result.errors.length).toBeGreaterThan(0);
 
 			// Verify the script was still saved despite validation errors
-			const saved = viewScript("script://test-invalid.ts");
+			const saved = getScript("script://test-invalid.ts");
 			expect(saved.name).toBe("script://test-invalid.ts");
 			expect(saved.content).toBe(invalidScript);
 		});
@@ -84,7 +84,7 @@ export default async function run(client: Client) {
 			expect(result.valid).toBe(true);
 			expect(result.errors).toHaveLength(0);
 
-			const updated = viewScript("script://test-update.ts");
+			const updated = getScript("script://test-update.ts");
 			expect(updated.content).toContain("items.find('123')");
 			expect(updated.content).not.toContain("items.list()");
 		});
@@ -109,7 +109,7 @@ export default async function run(client: Client) {
 			expect(result.errors.length).toBeGreaterThan(0);
 
 			// Verify the script was still updated despite validation errors
-			const updated = viewScript("script://test-update-invalid.ts");
+			const updated = getScript("script://test-update-invalid.ts");
 			expect(updated.content).not.toContain("export default");
 		});
 

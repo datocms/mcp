@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 import { code, h2, li, p, pre, render, ul } from "../../lib/markdown.js";
-import { viewScript } from "../../lib/scripts/storage.js";
+import { getScript } from "../../lib/scripts/storage.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {
@@ -56,7 +56,7 @@ export function register(server: McpServer) {
 			},
 		},
 		async ({ name, start_line, limit }) => {
-			const script = viewScript(name);
+			const script = getScript(name);
 			const lines = script.content.split("\n");
 
 			// If no line range specified, return full script without line numbers

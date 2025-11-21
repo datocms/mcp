@@ -4,9 +4,9 @@ import { code, h1, h2, li, ol, p, render } from "../../lib/markdown.js";
 import { updateScript } from "../../lib/scripts/storage.js";
 import { DEFAULT_ALLOWED_PACKAGES } from "../../lib/scripts/validation.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
-import { validateAndExecuteScript } from "../../lib/workspace/execute.js";
+import { validateExecuteAndRender } from "./utils.js";
 
-export function register(server: McpServer, apiToken?: string) {
+export function register(server: McpServer) {
 	const allowedPackagesStr = DEFAULT_ALLOWED_PACKAGES.join(", ");
 
 	simplifiedRegisterTool(
@@ -107,27 +107,7 @@ export function register(server: McpServer, apiToken?: string) {
 				);
 			}
 
-			// Run TypeScript validation and optionally execute
-			const result = await validateAndExecuteScript(
-				name,
-				apiToken,
-				execute,
-				"updated",
-			);
-
-			if (result) {
-				return result;
-			}
-
-			return render(
-				h1("Script updated successfully"),
-				p(
-					"Script ",
-					code(name),
-					" has been updated with no validation errors.",
-				),
-				p("Use ", code("view_script"), " to view its updated content."),
-			);
+			return await validateExecuteAndRender(name, execute, "updated");
 		},
 	);
 }

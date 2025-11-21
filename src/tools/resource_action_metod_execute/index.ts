@@ -1,10 +1,9 @@
-import { buildClient } from "@datocms/cma-client-node";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import jq from "node-jq";
 import { serializeError } from "serialize-error";
 import z from "zod";
 import { extractResourcesEndpointMethods } from "../../lib/code_analysis/extractEndpointMethods.js";
-import { MAX_OUTPUT_BYTES } from "../../lib/config.js";
+import { datocmsClient, MAX_OUTPUT_BYTES } from "../../lib/config.js";
 import { invariant } from "../../lib/invariant.js";
 import { h1, p, pre, render } from "../../lib/markdown.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
@@ -14,7 +13,7 @@ import {
 } from "../../lib/resources/finders.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
-export function register(server: McpServer, apiToken: string) {
+export function register(server: McpServer) {
 	for (const variant of ["destructive", "readonly"]) {
 		const humanizedVariant =
 			variant === "destructive"
@@ -61,12 +60,6 @@ export function register(server: McpServer, apiToken: string) {
 						.describe(
 							"The response of a method call can be extremely big! Here you can pass a jq selector to filter it out (ie. .attributes.name)",
 						),
-					environmentId: z
-						.string()
-						.optional()
-						.describe(
-							"The ID of the environment in which to perform the call. If not passed it defaults to the primary environment.",
-						),
 				},
 			},
 			async ({
@@ -75,8 +68,9 @@ export function register(server: McpServer, apiToken: string) {
 				method,
 				arguments: args,
 				jqSelector,
-				environmentId,
 			}) => {
+				invariant(datocmsClient);
+
 				const jsClientSchema = await fetchResourcesSchema();
 
 				const jsClientEntity = findResourcesEntityByNamespace(
@@ -123,13 +117,10 @@ export function register(server: McpServer, apiToken: string) {
 					"Invalid method name: Use the `resource_action` tools to learn about the available methods for a resource action.",
 				);
 
-				const client = buildClient({
-					apiToken,
-					environment: environmentId,
-				}) as any;
-
 				try {
-					const result = await client[namespace][method](...args);
+					const result = await (datocmsClient as any)[namespace][method](
+						...args,
+					);
 					let serialized = jqSelector
 						? ((await jq.run(jqSelector, result, {
 								input: "json",
@@ -139,7 +130,10 @@ export function register(server: McpServer, apiToken: string) {
 
 					const isTruncated = serialized.length > MAX_OUTPUT_BYTES;
 					if (isTruncated) {
-						serialized = `${serialized.slice(0, MAX_OUTPUT_BYTES)}\n...[truncated]`;
+						serialized = `${serialized.slice(
+							0,
+							MAX_OUTPUT_BYTES,
+						)}\n...[truncated]`;
 					}
 
 					return render(

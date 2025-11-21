@@ -1,30 +1,56 @@
-import { buildClient } from "@datocms/cma-client-node";
-import { MAX_OUTPUT_BYTES, SCRIPT_TIMEOUT_MS } from "../config.js";
-import { code, h1, h2, p, pre, render } from "../markdown.js";
-import type { Script } from "../scripts/storage.js";
-import { viewScript } from "../scripts/storage.js";
-import type { Workspace } from "./index.js";
-import { getWorkspace } from "./index.js";
+import {
+	datocmsClient,
+	MAX_OUTPUT_BYTES,
+	SCRIPT_TIMEOUT_MS,
+} from "../../lib/config.js";
+import { invariant } from "../../lib/invariant.js";
+import { code, h1, h2, p, pre, render } from "../../lib/markdown.js";
+import { getScript } from "../../lib/scripts/storage.js";
+import { getWorkspace } from "../../lib/workspace/index.js";
 
-export async function validateAndExecuteScript(
+export async function validateExecuteAndRender(
 	scriptName: string,
-	apiToken: string | undefined,
 	execute: boolean | undefined,
 	actionVerb: string,
-): Promise<string | null> {
-	// If no API token, skip TypeScript validation and execution
-	if (!apiToken) {
-		return null;
+): Promise<string> {
+	const validationErrors = await validateAndRender(scriptName);
+
+	if (validationErrors) {
+		return render(
+			h1(`Script ${actionVerb} with TypeScript validation errors`),
+			validationErrors,
+		);
 	}
 
-	const script = viewScript(scriptName);
+	// Execute the script if requested
+	if (execute) {
+		return executeAndRender(
+			scriptName,
+			`Script ${actionVerb} and executed successfully`,
+			`Script ${actionVerb}, but execution`,
+		);
+	}
+
+	return render(
+		h1(`Script ${actionVerb} successfully`),
+		p(
+			"Script ",
+			code(scriptName),
+			` has been ${actionVerb} with no validation errors.`,
+		),
+		p("Use ", code("view_script"), " to view its content."),
+	);
+}
+
+export async function validateAndRender(scriptName: string) {
+	invariant(datocmsClient);
+
+	const script = getScript(scriptName);
 	const wm = await getWorkspace();
-	const client = buildClient({ apiToken });
-	const tsValidation = await wm.validateScript(script, client);
+	const tsValidation = await wm.validateScript(script, datocmsClient);
 
 	if (!tsValidation.passed) {
 		return render(
-			h1(`Script ${actionVerb} with TypeScript validation errors`),
 			p("Script ", code(scriptName), " has TypeScript validation errors:"),
 			pre({ language: "text" }, tsValidation.output),
 			p(
@@ -35,37 +61,28 @@ export async function validateAndExecuteScript(
 		);
 	}
 
-	// Execute the script if requested
-	if (execute) {
-		return executeAndRender(
-			script,
-			apiToken,
-			wm,
-			`Script ${actionVerb} and executed`,
-			`Script ${actionVerb} but execution`,
-		);
-	}
-
-	// Return null to indicate success without execution
 	return null;
 }
 
 export async function executeAndRender(
-	script: Script,
-	apiToken: string,
-	wm: Workspace,
-	successPrefix: string = "Script executed",
+	scriptName: string,
+	success: string = "Script executed successfully",
 	failurePrefix: string = "Script execution",
 ): Promise<string> {
+	invariant(datocmsClient);
+
+	const script = getScript(scriptName);
+	const wm = await getWorkspace();
+
 	const result = await wm.executeScript(script, {
-		apiToken,
+		client: datocmsClient,
 		timeoutMs: SCRIPT_TIMEOUT_MS,
 		maxStdoutBytes: MAX_OUTPUT_BYTES,
 	});
 
 	if (result.success) {
 		return render(
-			h1(`${successPrefix} successfully`),
+			h1(success),
 			p("Script ", code(script.name), " completed successfully."),
 			...(result.stdout
 				? [h2("Output"), pre({ language: "text" }, result.stdout)]
