@@ -1,3 +1,10 @@
 #!/usr/bin/env node
 
-import('../dist/stdio.js');
+import('../dist/stdio.js').catch((err) => {
+  // print error on stderr so it doesn't break JSON-RPC on stdout
+  console.error(
+    'Failed to start dist/stdio.js:',
+    err && err.stack ? err.stack : err
+  );
+  process.exit(1);
+});

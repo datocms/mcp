@@ -32,9 +32,10 @@ const manifest = {
 		entry_point: "bin/stdio",
 		mcp_config: {
 			command: "node",
-			args: ["${__dirname}/bin/stdio"],
+			args: ["${__dirname}/dist/stdio.js"],
 			env: {
 				DATOCMS_API_TOKEN: "${user_config.api_token}",
+				DATOCMS_ENVIRONMENT: "${user_config.environment}",
 				EXECUTION_TIMEOUT_SECONDS: "${user_config.execution_timeout_seconds}",
 				MAX_OUTPUT_BYTES: "${user_config.max_output_bytes}",
 				NODE_ENV: "production",
@@ -57,6 +58,13 @@ const manifest = {
 				"Your DatoCMS API token. Get it from your project settings at https://www.datocms.com/docs/content-management-api/authentication",
 			sensitive: true,
 			required: true,
+		},
+		environment: {
+			type: "string",
+			title: "DatoCMS Environment",
+			description: `Specifies which DatoCMS environment the MCP server should interact with. If not set, the server automatically uses the project’s primary environment.`,
+			sensitive: false,
+			required: false,
 		},
 		execution_timeout_seconds: {
 			type: "number",
