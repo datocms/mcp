@@ -641,6 +641,80 @@ rawCreate(body: ItemCreateSchema<NoInfer<D>>): Promise<{ data: ItemInNestedRespo
 ]
 `;
 
+exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with specific expandTypes 1`] = `
+[
+  {
+    "text": "\`\`\`typescript
+// Expanded type definitions for: ToItemAttributes, GalleryFieldValue
+
+export type ToItemAttributes<T extends ItemTypeDefinition<any, any, any>> = T extends ItemTypeDefinition<infer Settings, infer ItemTypeId, infer Fields> ? keyof Fields extends never ? Record<string, unknown> : {
+    [K in keyof Fields]: Fields[K] extends FieldDefinition ? FieldDefinitionToFieldValue<Fields[K], Settings['locales']> : never;
+} : never;
+
+export type ItemTypeDefinition<Settings extends {
+    locales: string;
+} = {
+    locales: string;
+}, ItemTypeId extends string = string, FieldDefinitions extends Record<string, FieldDefinition> = {}> = {
+    settings: Settings;
+    itemTypeId: ItemTypeId;
+    fields: FieldDefinitions;
+};
+
+export type FieldDefinition = BaseFieldDefinition<'boolean' | 'color' | 'date' | 'date_time' | 'file' | 'float' | 'gallery' | 'integer' | 'json' | 'lat_lon' | 'link' | 'links' | 'seo' | 'slug' | 'string' | 'text' | 'video' | 'unknown'> | RichTextFieldDefinition | SingleBlockFieldDefinition | StructuredTextFieldDefinition;
+
+type FieldDefinitionToFieldValue<T extends FieldDefinition, Locales extends string> = LocalizeIfNeeded<T, FieldTypeToValue[T['type']], Locales>;
+
+type LocalizeIfNeeded<T extends FieldDefinition, Value, Locales extends string> = T extends {
+    localized: true;
+} ? LocalizedFieldValue<Value, Locales> : Value;
+
+type FieldTypeToValue = {
+    boolean: BooleanFieldValue;
+    color: ColorFieldValue;
+    date: DateFieldValue;
+    date_time: DateTimeFieldValue;
+    file: FileFieldValue;
+    float: FloatFieldValue;
+    gallery: GalleryFieldValue;
+    integer: IntegerFieldValue;
+    json: JsonFieldValue;
+    lat_lon: LatLonFieldValue;
+    link: LinkFieldValue;
+    links: LinksFieldValue;
+    rich_text: RichTextFieldValue;
+    seo: SeoFieldValue;
+    single_block: SingleBlockFieldValue;
+    slug: SlugFieldValue;
+    string: StringFieldValue;
+    structured_text: StructuredTextFieldValue;
+    text: TextFieldValue;
+    video: VideoFieldValue;
+    unknown: unknown;
+};
+
+export type GalleryFieldValue = Array<GalleryItem>;
+
+export type GalleryItem = NonNullable<FileFieldValue>;
+
+export type FileFieldValue = {
+    upload_id: string;
+    alt: string | null;
+    title: string | null;
+    custom_data: Record<string, unknown>;
+    focal_point: {
+        x: number;
+        y: number;
+    } | null;
+} | null;
+
+// Additional referenced types (not expanded): BaseFieldDefinition, BooleanFieldValue, ColorFieldValue, DateFieldValue, DateTimeFieldValue, FloatFieldValue, IntegerFieldValue, JsonFieldValue, LatLonFieldValue, LinkFieldValue, LinksFieldValue, LocalizedFieldValue, RichTextFieldDefinition, RichTextFieldValue, SeoFieldValue, SingleBlockFieldDefinition, SingleBlockFieldValue, SlugFieldValue, StringFieldValue, StructuredTextFieldDefinition, StructuredTextFieldValue, TextFieldValue, VideoFieldValue
+\`\`\`",
+    "type": "text",
+  },
+]
+`;
+
 exports[`MCP Server E2E Tests > Server without API token > should call resource_action_method with valid resource and method /2 1`] = `
 [
   {
@@ -649,7 +723,7 @@ exports[`MCP Server E2E Tests > Server without API token > should call resource_
 
 create(itemTypeId: string | ItemTypeData<ItemTypeDefinition>, body: FieldCreateSchema): Promise<(Omit<FieldStableShell, "field_type" | "default_value" | "validators" | "appearance" | "localized"> & { field_type: "boolean"; localized: false; default_value: BooleanFieldValue; validators: BooleanFieldValidators; appearance: BooleanFieldAppearance & Omit<...>; }) | ... 38 more ... | (Omit<...> & { ...; })>
 
-// Referenced Type Definitions:
+// Referenced type definitions:
 
 export type ItemTypeData<D extends ItemTypeDefinition = ItemTypeDefinition> = {
     type: ItemTypeType;
@@ -1892,7 +1966,7 @@ exports[`MCP Server E2E Tests > Server without API token > should call resource_
 
 create(body: ItemCreateSchema<NoInfer<D>>): Promise<Item<NoInfer<D>>>
 
-// Referenced Type Definitions:
+// Referenced type definitions:
 
 export type ItemCreateSchema<D extends ItemTypeDefinition = ItemTypeDefinition> = {
     id?: ItemIdentity;
@@ -1957,6 +2031,8 @@ export type ItemTypeDefinition<Settings extends {
     fields: FieldDefinitions;
 };
 
+export type FieldDefinition = BaseFieldDefinition<'boolean' | 'color' | 'date' | 'date_time' | 'file' | 'float' | 'gallery' | 'integer' | 'json' | 'lat_lon' | 'link' | 'links' | 'seo' | 'slug' | 'string' | 'text' | 'video' | 'unknown'> | RichTextFieldDefinition | SingleBlockFieldDefinition | StructuredTextFieldDefinition;
+
 export type ItemIdentity = string;
 
 export type ItemType1 = 'item';
@@ -1966,34 +2042,64 @@ export type ItemTypeData<D extends ItemTypeDefinition = ItemTypeDefinition> = {
     id: D extends ItemTypeDefinition ? D['itemTypeId'] : ItemTypeIdentity;
 };
 
+export type ItemTypeType = 'item_type';
+
+export type ItemTypeIdentity = string;
+
 export type AccountData = {
     type: AccountType;
     id: AccountIdentity;
 };
+
+export type AccountType = 'account';
+
+export type AccountIdentity = string;
 
 export type AccessTokenData = {
     type: AccessTokenType;
     id: AccessTokenIdentity;
 };
 
+export type AccessTokenType = 'access_token';
+
+export type AccessTokenIdentity = string;
+
 export type UserData = {
     type: UserType;
     id: UserIdentity;
 };
+
+export type UserType = 'user';
+
+export type UserIdentity = string;
 
 export type SsoUserData = {
     type: SsoUserType;
     id: SsoUserIdentity;
 };
 
+export type SsoUserType = 'sso_user';
+
+export type SsoUserIdentity = string;
+
 export type OrganizationData = {
     type: OrganizationType;
     id: OrganizationIdentity;
 };
 
+export type OrganizationType = 'organization';
+
+export type OrganizationIdentity = string;
+
 export type ToItemAttributesInRequest<T extends ItemTypeDefinition<any, any, any>> = T extends ItemTypeDefinition<infer Settings, infer ItemTypeId, infer Fields> ? keyof Fields extends never ? Record<string, unknown> : Partial<{
     [K in keyof Fields]: Fields[K] extends FieldDefinition ? FieldDefinitionToFieldValueInRequest<Fields[K], Settings['locales']> : never;
 }> : never;
+
+type FieldDefinitionToFieldValueInRequest<T extends FieldDefinition, Locales extends string> = T extends RichTextFieldDefinition<infer B> ? LocalizeIfNeeded<T, RichTextFieldValueInRequest<B>, Locales> : T extends SingleBlockFieldDefinition<infer B> ? LocalizeIfNeeded<T, SingleBlockFieldValueInRequest<B>, Locales> : T extends StructuredTextFieldDefinition<infer B, infer I> ? LocalizeIfNeeded<T, StructuredTextFieldValueInRequest<T extends {
+    blocks: any;
+} ? B : never, T extends {
+    inline_blocks: any;
+} ? I : never>, Locales> : LocalizeIfNeeded<T, FieldTypeToValueInRequest[T['type']], Locales>;
 
 export type Item<D extends ItemTypeDefinition = ItemTypeDefinition> = {
     __itemTypeId?: D['itemTypeId'];
@@ -2062,6 +2168,10 @@ export type ItemMeta = {
 export type ToItemAttributes<T extends ItemTypeDefinition<any, any, any>> = T extends ItemTypeDefinition<infer Settings, infer ItemTypeId, infer Fields> ? keyof Fields extends never ? Record<string, unknown> : {
     [K in keyof Fields]: Fields[K] extends FieldDefinition ? FieldDefinitionToFieldValue<Fields[K], Settings['locales']> : never;
 } : never;
+
+type FieldDefinitionToFieldValue<T extends FieldDefinition, Locales extends string> = LocalizeIfNeeded<T, FieldTypeToValue[T['type']], Locales>;
+
+// Additional referenced types (not expanded): BaseFieldDefinition, BlockInRequest, BooleanFieldValue, ColorFieldValue, DateFieldValue, DateTimeFieldValue, DocumentInRequest, FieldTypeToValue, FieldTypeToValueInRequest, FileFieldValue, FileFieldValueInRequest, FloatFieldValue, GalleryFieldValue, GalleryFieldValueInRequest, GalleryItem, GalleryItemInRequest, IntegerFieldValue, JsonFieldValue, LatLonFieldValue, LinkFieldValue, LinksFieldValue, LocalizeIfNeeded, LocalizedFieldValue, NewBlockInRequest, RichTextFieldDefinition, RichTextFieldValue, RichTextFieldValueInRequest, SeoFieldValue, SingleBlockFieldDefinition, SingleBlockFieldValue, SingleBlockFieldValueInRequest, SlugFieldValue, StringFieldValue, StructuredTextFieldDefinition, StructuredTextFieldValue, StructuredTextFieldValueInRequest, TextFieldValue, UnchangedBlockInRequest, UpdatedBlockInRequest, VideoFieldValue
 \`\`\`",
     "type": "text",
   },

@@ -1,22 +1,11 @@
 import * as ts from "typescript";
 import { BUILT_IN_TYPE_NAMES, isTypeParameter } from "./typeFilters.js";
 
-/**
- * Extracts the full type definitions for a list of type names,
- * including all their dependencies across multiple files.
- *
- * This uses the TypeChecker to resolve types across files, handling:
- * - Cross-file imports
- * - Circular type references
- * - External package types
- * - Complex generics
- *
- * @param checker - TypeScript type checker that can resolve across all files
- * @param program - TypeScript program containing all source files
- * @param typeNames - Array of type names to extract (e.g., ["Upload", "UploadCreateSchema"])
- * @param typeSymbols - Optional map of type names to their symbols (for disambiguation)
- * @returns A string containing all type definitions
- */
+export interface TypeExtractionResult {
+	expandedTypes: string;
+	notExpandedTypes: string[];
+}
+
 export interface TypeExtractionOptions {
 	/**
 	 * Maximum depth for type expansion.
@@ -24,8 +13,8 @@ export interface TypeExtractionOptions {
 	 */
 	maxDepth?: number;
 	/**
-	 * Specific type names to fully expand regardless of depth.
-	 * Use ['*'] to expand all types (no depth limit).
+	 * When provided, only these types are extracted (starting at depth 0),
+	 * instead of the types in typeNames. Use ['*'] to expand all types with no depth limit.
 	 */
 	expandTypes?: string[];
 }
@@ -36,18 +25,19 @@ export function extractTypeDependencies(
 	typeNames: string[],
 	typeSymbols?: Map<string, ts.Symbol>,
 	options: TypeExtractionOptions = {},
-): string {
+): TypeExtractionResult {
 	const maxDepth = options.maxDepth ?? 2;
 	const expandTypes = options.expandTypes ?? [];
+	const noDepthLimit = expandTypes.includes("*");
 
-	// Helper: Should we expand this type beyond depth limit?
-	const shouldExpandType = (typeName: string): boolean => {
-		if (expandTypes.includes("*")) return true;
-		return expandTypes.includes(typeName);
-	};
+	// When expandTypes is provided (and not '*'), use those as starting types
+	const startingTypes =
+		expandTypes.length > 0 && !noDepthLimit ? expandTypes : typeNames;
 
 	const extractedTypes = new Map<string, string>();
-	const visited = new Set<string>();
+	// Track the minimum depth at which each type was processed
+	const processedAtDepth = new Map<string, number>();
+	const unexpandedTypes = new Set<string>();
 
 	// Helper to get unique identifier for a type/symbol
 	const getTypeId = (symbol: ts.Symbol): string => {
@@ -65,11 +55,43 @@ export function extractTypeDependencies(
 
 	// Recursively extract a type and its dependencies
 	const extractType = (typeName: string, currentDepth: number = 0): void => {
-		if (visited.has(typeName)) return;
-		visited.add(typeName);
+		// Skip if already processed at same or shallower depth
+		const previousDepth = processedAtDepth.get(typeName);
+		if (previousDepth !== undefined && previousDepth <= currentDepth) return;
+		processedAtDepth.set(typeName, currentDepth);
 
-		// Check depth limit (unless type is in expandTypes)
-		if (currentDepth >= maxDepth && !shouldExpandType(typeName)) {
+		// Remove from unexpandedTypes if we're now processing at a shallower depth
+		unexpandedTypes.delete(typeName);
+
+		// Check depth limit (unless '*' was specified for no limit)
+		if (currentDepth >= maxDepth && !noDepthLimit) {
+			// Track this as an unexpanded type (only if it's a valid type we could expand)
+			if (!BUILT_IN_TYPE_NAMES.has(typeName)) {
+				const typeSymbol =
+					typeSymbols?.get(typeName) ??
+					findTypeSymbol(checker, program, typeName);
+				if (typeSymbol) {
+					const declarations = typeSymbol.getDeclarations();
+					if (declarations && declarations.length > 0) {
+						const declaration = declarations[0];
+						const sourceFile = declaration?.getSourceFile();
+						if (sourceFile?.fileName.includes("@datocms")) {
+							unexpandedTypes.add(typeName);
+
+							// Still discover dependencies to mark them as unexpanded too
+							if (declaration) {
+								const referencedTypes = findReferencedTypes(
+									declaration,
+									checker,
+								);
+								for (const refType of referencedTypes) {
+									extractType(refType, currentDepth + 1);
+								}
+							}
+						}
+					}
+				}
+			}
 			return;
 		}
 
@@ -122,12 +144,14 @@ export function extractTypeDependencies(
 	};
 
 	// Extract all requested types
-	for (const typeName of typeNames) {
-		extractType(typeName);
+	for (const typeName of startingTypes) {
+		extractType(typeName, 0);
 	}
 
-	// Return all extracted type definitions
-	return Array.from(extractedTypes.values()).join("\n\n");
+	const expandedTypes = Array.from(extractedTypes.values()).join("\n\n");
+	const notExpandedTypes = Array.from(unexpandedTypes).sort();
+
+	return { expandedTypes, notExpandedTypes };
 }
 
 /**

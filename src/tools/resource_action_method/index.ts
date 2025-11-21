@@ -65,25 +65,55 @@ export function register(server: McpServer) {
 				const formattedSignature = formatMethodSignature(methodSignature);
 
 				// 4. Extract all referenced types using TypeChecker
-				const typeDefinitions = extractTypeDependencies(
+				const { expandedTypes, notExpandedTypes } = extractTypeDependencies(
 					checker,
 					program,
 					Array.from(methodSignature.referencedTypeSymbols.keys()),
 					methodSignature.referencedTypeSymbols,
-					{ maxDepth: 2, expandTypes },
+					{ maxDepth: 3, expandTypes },
 				);
 
 				// 5. Return formatted result
-				const output = [
-					`// Method: client.${resource}.${method}`,
-					"",
-					formattedSignature,
-					...(typeDefinitions
-						? ["", "// Referenced Type Definitions:", "", typeDefinitions]
-						: []),
-				].join("\n");
+				const isExpandingSpecificTypes =
+					expandTypes && expandTypes.length > 0 && !expandTypes.includes("*");
 
-				return render(pre({ language: "typescript" }, output));
+				const outputParts: string[] = [];
+
+				if (isExpandingSpecificTypes) {
+					// When expanding specific types, only show type definitions
+					if (expandedTypes) {
+						outputParts.push(
+							`// Expanded type definitions for: ${expandTypes.join(", ")}`,
+						);
+						outputParts.push("");
+						outputParts.push(expandedTypes);
+					}
+					if (notExpandedTypes.length > 0) {
+						if (expandedTypes) outputParts.push("");
+						outputParts.push(
+							`// Additional referenced types (not expanded): ${notExpandedTypes.join(", ")}`,
+						);
+					}
+				} else {
+					// Normal mode: show method signature and all types
+					outputParts.push(`// Method: client.${resource}.${method}`);
+					outputParts.push("");
+					outputParts.push(formattedSignature);
+					if (expandedTypes) {
+						outputParts.push("");
+						outputParts.push("// Referenced type definitions:");
+						outputParts.push("");
+						outputParts.push(expandedTypes);
+					}
+					if (notExpandedTypes.length > 0) {
+						outputParts.push("");
+						outputParts.push(
+							`// Additional referenced types (not expanded): ${notExpandedTypes.join(", ")}`,
+						);
+					}
+				}
+
+				return render(pre({ language: "typescript" }, outputParts.join("\n")));
 			} catch (error) {
 				console.error("Error in resource_action_method tool:", error);
 				throw error;

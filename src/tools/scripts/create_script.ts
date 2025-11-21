@@ -25,10 +25,11 @@ import { validateAndExecuteScript } from "../../lib/workspace/execute.js";
 const { program, checker } = getCmaClientProgram();
 
 // Extract error types with their dependencies
-const errorTypes = extractTypeDependencies(checker, program, [
-	"ApiError",
-	"TimeoutError",
-]);
+const { expandedTypes: errorTypes } = extractTypeDependencies(
+	checker,
+	program,
+	["ApiError", "TimeoutError"],
+);
 
 export function register(server: McpServer, apiToken?: string) {
 	const allowedPackagesStr = DEFAULT_ALLOWED_PACKAGES.join(", ");

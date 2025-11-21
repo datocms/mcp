@@ -135,6 +135,25 @@ describe("MCP Server E2E Tests", () => {
 			expect(content).toMatchSnapshot();
 		});
 
+		it("should call resource_action_method with specific expandTypes", async () => {
+			const result = await client.callTool({
+				name: "resource_action_method",
+				arguments: {
+					resource: "items",
+					method: "create",
+					expandTypes: ["ToItemAttributes", "GalleryFieldValue"],
+				},
+			});
+
+			const content = getTextContent(result);
+			expect(content).toBeDefined();
+			expect(Array.isArray(content)).toBe(true);
+			expect(content.length).toBeGreaterThan(0);
+
+			// Verify response matches expected snapshot
+			expect(content).toMatchSnapshot();
+		});
+
 		it("should call resource_action with itemTypes and instances action", async () => {
 			const result = await client.callTool({
 				name: "resource_action",

@@ -195,316 +195,158 @@ describe("TypeScript Compiler API - Unit Tests", () => {
 	});
 
 	describe("extractTypeDependencies", () => {
-		it("should extract type dependencies for items.list", () => {
-			const { program, checker, clientClass } = getCmaClientProgram();
-
-			const signature = extractMethodSignature(
-				checker,
-				clientClass,
-				"items",
-				"list",
-			);
-
-			assert(signature);
-
-			const typeDependencies = extractTypeDependencies(
-				checker,
-				program,
-				Array.from(signature.referencedTypeSymbols.keys()),
-				signature.referencedTypeSymbols,
-			);
-
-			expect(typeDependencies).toBeDefined();
-			expect(typeof typeDependencies).toBe("string");
-			expect(typeDependencies.length).toBeGreaterThan(0);
-		}, 10000);
-
-		it("should extract type definitions as valid TypeScript", () => {
-			const { program, checker, clientClass } = getCmaClientProgram();
-
-			const signature = extractMethodSignature(
-				checker,
-				clientClass,
-				"items",
-				"find",
-			);
-
-			assert(signature);
-
-			const typeDependencies = extractTypeDependencies(
-				checker,
-				program,
-				Array.from(signature.referencedTypeSymbols.keys()),
-				signature.referencedTypeSymbols,
-			);
-
-			// Should contain TypeScript type/interface declarations
-			expect(typeDependencies).toMatch(/type |interface |enum /);
-		}, 10000);
-
 		it("should handle empty type list", () => {
 			const { program, checker } = getCmaClientProgram();
-
-			const typeDependencies = extractTypeDependencies(checker, program, []);
-
-			// Should return empty string or no definitions
-			expect(typeDependencies).toBe("");
+			const result = extractTypeDependencies(checker, program, []);
+			expect(result.expandedTypes).toBe("");
+			expect(result.notExpandedTypes).toEqual([]);
 		}, 10000);
 
-		it("should respect maxDepth option (depth 0 = no types)", () => {
+		it("itemTypes.list with maxDepth 0 (no types)", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"list",
 			);
-
 			assert(signature);
-
-			const typeDependencies = extractTypeDependencies(
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
 				{ maxDepth: 0 },
 			);
-
-			// Depth 0 should return no type definitions
-			expect(typeDependencies).toBe("");
+			expect(result).toMatchSnapshot();
 		}, 10000);
 
-		it("should respect maxDepth option (depth 1 = only direct types)", () => {
+		it("itemTypes.list with maxDepth 1", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"list",
 			);
-
 			assert(signature);
-
-			const typeDependencies = extractTypeDependencies(
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
 				{ maxDepth: 1 },
 			);
-
-			// Should include the direct types
-			expect(typeDependencies).toContain("ItemTypeInstancesTargetSchema");
-			expect(typeDependencies).toContain("ItemType");
-			// Should be relatively short since we're not going deep
-			expect(typeDependencies.length).toBeGreaterThan(0);
-			expect(typeDependencies.length).toBeLessThan(5000);
+			expect(result).toMatchSnapshot();
 		}, 10000);
 
-		it("should use default maxDepth of 2 when not specified", () => {
+		it("itemTypes.list with maxDepth 2 (default)", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"list",
 			);
-
 			assert(signature);
-
-			// Call without options (should default to maxDepth: 2)
-			const withDefault = extractTypeDependencies(
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
 			);
-
-			// Call with explicit maxDepth: 2
-			const withExplicit = extractTypeDependencies(
-				checker,
-				program,
-				Array.from(signature.referencedTypeSymbols.keys()),
-				signature.referencedTypeSymbols,
-				{ maxDepth: 2 },
-			);
-
-			// Both should produce the same result
-			expect(withDefault).toBe(withExplicit);
+			expect(result).toMatchSnapshot();
 		}, 10000);
 
-		it("should expand all types with expandTypes: ['*']", () => {
+		it("itemTypes.list with expandTypes: [*]", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"list",
 			);
-
 			assert(signature);
-
-			const allTypes = extractTypeDependencies(
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
 				{ maxDepth: 2, expandTypes: ["*"] },
 			);
+			expect(result).toMatchSnapshot();
+		}, 10000);
 
-			const limitedTypes = extractTypeDependencies(
+		it("itemTypes.rawList with maxDepth 2", () => {
+			const { program, checker, clientClass } = getCmaClientProgram();
+			const signature = extractMethodSignature(
+				checker,
+				clientClass,
+				"itemTypes",
+				"rawList",
+			);
+			assert(signature);
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
-				{ maxDepth: 2 },
 			);
-
-			// expandTypes: ['*'] should return more types than depth-limited version
-			expect(allTypes.length).toBeGreaterThan(limitedTypes.length);
-
-			// Should include deeply nested types
-			const allTypeCount = (
-				allTypes.match(/^(export )?(type|interface) /gm) || []
-			).length;
-			const limitedTypeCount = (
-				limitedTypes.match(/^(export )?(type|interface) /gm) || []
-			).length;
-
-			expect(allTypeCount).toBeGreaterThan(limitedTypeCount);
+			expect(result).toMatchSnapshot();
 		}, 10000);
 
-		it("should expand specific types with expandTypes array", () => {
+		it("uploads.create with maxDepth 2", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"uploads",
 				"create",
 			);
-
 			assert(signature);
-
-			const typeNames = Array.from(signature.referencedTypeSymbols.keys());
-			expect(typeNames.length).toBeGreaterThan(0);
-
-			// Extract with only the first type expanded
-			const specificType = typeNames[0];
-			assert(specificType);
-
-			const withSpecific = extractTypeDependencies(
-				checker,
-				program,
-				typeNames,
-				signature.referencedTypeSymbols,
-				{ maxDepth: 2, expandTypes: [specificType] },
-			);
-
-			// Should include the specified type
-			expect(withSpecific).toContain(specificType);
-			expect(withSpecific.length).toBeGreaterThan(0);
-		}, 10000);
-
-		it("should handle multiple specific types in expandTypes", () => {
-			const { program, checker, clientClass } = getCmaClientProgram();
-
-			const signature = extractMethodSignature(
-				checker,
-				clientClass,
-				"itemTypes",
-				"list",
-			);
-
-			assert(signature);
-
-			// Expand specific types
-			const withMultiple = extractTypeDependencies(
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
-				{
-					maxDepth: 2,
-					expandTypes: ["ItemTypeInstancesTargetSchema", "ItemType"],
-				},
 			);
-
-			// Should include both specified types
-			expect(withMultiple).toContain("ItemTypeInstancesTargetSchema");
-			expect(withMultiple).toContain("ItemType");
+			expect(result).toMatchSnapshot();
 		}, 10000);
 
-		it("should reduce output size with depth limit compared to unlimited", () => {
+		it("items.list with maxDepth 2", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
-
-			const signature = extractMethodSignature(
-				checker,
-				clientClass,
-				"itemTypes",
-				"list",
-			);
-
-			assert(signature);
-
-			const unlimited = extractTypeDependencies(
-				checker,
-				program,
-				Array.from(signature.referencedTypeSymbols.keys()),
-				signature.referencedTypeSymbols,
-				{ maxDepth: 2, expandTypes: ["*"] },
-			);
-
-			const limited = extractTypeDependencies(
-				checker,
-				program,
-				Array.from(signature.referencedTypeSymbols.keys()),
-				signature.referencedTypeSymbols,
-				{ maxDepth: 2 },
-			);
-
-			// Limited should be smaller than unlimited
-			expect(limited.length).toBeLessThan(unlimited.length);
-
-			// Verify we're actually reducing output (at least 10% reduction)
-			const reduction = 1 - limited.length / unlimited.length;
-			expect(reduction).toBeGreaterThan(0.1);
-		}, 10000);
-
-		it("should handle empty expandTypes array", () => {
-			const { program, checker, clientClass } = getCmaClientProgram();
-
 			const signature = extractMethodSignature(
 				checker,
 				clientClass,
 				"items",
 				"list",
 			);
-
 			assert(signature);
-
 			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
-				{ maxDepth: 2, expandTypes: [] },
 			);
+			expect(result).toMatchSnapshot();
+		}, 10000);
 
-			// Empty expandTypes should behave the same as no expandTypes
-			const withoutExpandTypes = extractTypeDependencies(
+		it("items.find with maxDepth 2", () => {
+			const { program, checker, clientClass } = getCmaClientProgram();
+			const signature = extractMethodSignature(
+				checker,
+				clientClass,
+				"items",
+				"find",
+			);
+			assert(signature);
+			const result = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
-				{ maxDepth: 2 },
 			);
-
-			expect(result).toBe(withoutExpandTypes);
+			expect(result).toMatchSnapshot();
 		}, 10000);
 	});
 
@@ -525,7 +367,7 @@ describe("TypeScript Compiler API - Unit Tests", () => {
 			if (!signature) return;
 
 			// Extract type dependencies
-			const typeDependencies = extractTypeDependencies(
+			const { expandedTypes } = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
@@ -536,8 +378,8 @@ describe("TypeScript Compiler API - Unit Tests", () => {
 			expect(signature.methodName).toBe("create");
 			expect(signature.parameters.length).toBeGreaterThan(0);
 			expect(signature.returnType).toBeDefined();
-			expect(typeDependencies).toBeDefined();
-			expect(typeDependencies.length).toBeGreaterThan(0);
+			expect(expandedTypes).toBeDefined();
+			expect(expandedTypes.length).toBeGreaterThan(0);
 		}, 10000);
 
 		it("should handle complex types with generics", () => {
@@ -554,14 +396,14 @@ describe("TypeScript Compiler API - Unit Tests", () => {
 			assert(signature); // Raw methods typically return complex JSON:API structures
 			expect(signature.returnType).toContain("Promise");
 
-			const typeDependencies = extractTypeDependencies(
+			const { expandedTypes } = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(signature.referencedTypeSymbols.keys()),
 				signature.referencedTypeSymbols,
 			);
 
-			expect(typeDependencies).toBeDefined();
+			expect(expandedTypes).toBeDefined();
 		}, 10000);
 	});
 
@@ -646,56 +488,35 @@ describe("TypeScript Compiler API - Unit Tests", () => {
 		it("should extract different type definitions for list vs rawList", () => {
 			const { program, checker, clientClass } = getCmaClientProgram();
 
-			// Extract list() method
 			const listSignature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"list",
 			);
-			expect(listSignature).toBeDefined();
 			assert(listSignature);
-
-			const listTypeDefs = extractTypeDependencies(
+			const listResult = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(listSignature.referencedTypeSymbols.keys()),
 				listSignature.referencedTypeSymbols,
 			);
 
-			// Extract rawList() method
 			const rawListSignature = extractMethodSignature(
 				checker,
 				clientClass,
 				"itemTypes",
 				"rawList",
 			);
-			expect(rawListSignature).toBeDefined();
 			assert(rawListSignature);
-
-			const rawListTypeDefs = extractTypeDependencies(
+			const rawListResult = extractTypeDependencies(
 				checker,
 				program,
 				Array.from(rawListSignature.referencedTypeSymbols.keys()),
 				rawListSignature.referencedTypeSymbols,
 			);
 
-			// The type definitions should be different
-			expect(listTypeDefs).not.toBe(rawListTypeDefs);
-
-			// ApiTypes version: ItemType[] (just an array)
-			const listMatch = listTypeDefs.match(
-				/export type ItemTypeInstancesTargetSchema = ([^;]+);/,
-			);
-			expect(listMatch).toBeTruthy();
-			assert(listMatch);
-			expect(listMatch[1]?.trim()).toBe("ItemType[]");
-
-			// RawApiTypes version: { data: ItemType[] } (object with data property)
-			const rawListMatch = rawListTypeDefs.match(
-				/export type ItemTypeInstancesTargetSchema = \{[\s\S]*?data: ItemType\[\];[\s\S]*?\}/,
-			);
-			expect(rawListMatch).toBeTruthy();
+			expect({ listResult, rawListResult }).toMatchSnapshot();
 		}, 10000);
 
 		it("should preserve symbol information through extraction pipeline", () => {
