@@ -10,17 +10,18 @@
 
 ## DatoCMS MCP Server
 
-⚠️ Alpha Release: This server is in early development. Features may change and stability is not guaranteed.
+⚠️ **Beta Release**: This server is functional but has known limitations. Operations can be slow (complex tasks may take several minutes), token-intensive, and results can be unpredictable. Success rates improve with clear, precise prompts and as the LLM learns your content model. Read our [honest assessment](#limitations--known-issues) before getting started.
 
-A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). This server enables LLMs to explore and execute DatoCMS API operations through structured documentation and safe execution capabilities.
+A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). Unlike typical MCPs that expose 100+ raw API endpoints, this server uses a **layered approach** with just 10 carefully designed tools that guide LLMs through discovery, planning, and execution stages.
 
 ### Key Features
 
-- **Comprehensive API exploration**. Browse all DatoCMS resources, actions, and methods with live documentation.
-- **Schema introspection**. Access detailed information about your project's content models, fields, and relationships.
-- **Safe execution environment**. Built-in usage rules and guardrails prevent API misuse.
-- **Script management**. Create, store, and execute TypeScript scripts for complex operations and automation.
-- **Optional project access**. Use with or without API token for documentation vs. execution capabilities.
+- **Layered tool design**: 10 tools instead of 150+ API endpoints. Guides LLMs through discovery → planning → execution stages, reducing malformed calls and improving success rates.
+- **Script-based approach**: Write and execute complete TypeScript scripts that batch multiple operations together. Validated before execution with incremental editing support for faster iteration.
+- **Documentation-aware**: Retrieves detailed method documentation and concrete examples (yes, this consumes tokens, but it's necessary for the LLM to succeed).
+- **Schema introspection**: Access detailed information about your project's content models, fields, and relationships.
+- **Safe execution environment**: Built-in validation and guardrails prevent API misuse and malicious code execution.
+- **Optional project access**: Use with or without API token for documentation vs. execution capabilities.
 
 ### Requirements
 - Node.js 18 or newer
@@ -161,6 +162,24 @@ The DatoCMS MCP server supports the following environment variables:
 }
 ```
 
+### Design Philosophy
+
+Most MCPs take the easy path: wrap every API endpoint in a thin layer and hope the LLM figures it out. This rarely works well. DatoCMS has 40+ resources and 150+ API endpoints — exposing all of them would overwhelm any LLM.
+
+Instead, we use a **layered approach** inspired by [how Block built their MCP tools](https://engineering.block.xyz/blog/build-mcp-tools-like-ogres-with-layers):
+
+1. **Discovery layer**: Tools to explore what resources, actions, and methods are available
+2. **Planning layer**: Tools to understand how to use specific methods (with documentation and examples)
+3. **Execution layer**: Tools to actually perform operations (read-only or destructive)
+
+This structure guides the LLM through a workflow that matches how humans would approach an unfamiliar API. It reduces the chance of malformed calls and makes debugging much easier.
+
+Additionally, our **script-based approach** lets LLMs write complete TypeScript programs instead of making one API call at a time. This:
+- Reduces round-trips and token overhead
+- Gives the LLM full context to reason about entire operations
+- Enables incremental editing when errors occur (fixing specific issues without rewriting everything)
+- Allows complex multi-step operations that would fail with individual API calls
+
 ### Tools
 
 The DatoCMS MCP server provides the following tools:
@@ -187,6 +206,23 @@ The DatoCMS MCP server provides the following tools:
 - **view_script**: View the content of a previously created script
 - **update_script**: Update an existing script
 - **execute_script**: Run a script against your DatoCMS project (requires an API token)
+
+### Limitations & Known Issues
+
+This MCP is more reliable than most alternatives, but let's be honest about what to expect:
+
+- **Speed**: Complex operations are slow. Generating a landing page can take 5-10 minutes. Simple tasks that would take seconds via direct API calls may take a minute or more through the MCP due to the discovery and planning stages.
+
+- **Token consumption**: The documentation-aware approach is expensive. Each operation can burn through thousands of tokens because we retrieve full method documentation and examples. This is necessary for success, but it comes at a cost.
+
+- **Unpredictability**: LLMs sometimes take inefficient paths, forget context, or make mistakes even with complete information. Success rates improve significantly when you:
+  - Provide clear, precise prompts
+  - Anticipate sources of uncertainty and address them upfront
+  - Allow the LLM to learn your content model through initial operations
+
+- **Scale limitations**: Very large records or particularly complex batch operations may hit timeout or output limits. The server can handle most real-world scenarios, but edge cases exist.
+
+**Why release it?** Because despite these limitations, it successfully handles complex multi-step operations that break other MCPs. It can generate landing pages, translate content, modify schemas, and perform batch updates — tasks that require genuine understanding of your content model. When it works, it works well. And it works often enough to be genuinely useful.
 
 ### Security
 
@@ -216,6 +252,21 @@ All scripts created through the `create_script` and `update_script` tools underg
 4. **AST-Level Validation**: The server uses TypeScript's compiler API to parse and validate the script's Abstract Syntax Tree (AST), ensuring structural requirements are met before any code execution.
 
 These validations are performed at script creation/update time, preventing malicious code from ever being stored or executed. For implementation details, see [src/lib/scripts/validation.ts](src/lib/scripts/validation.ts).
+
+### Feedback & Contributing
+
+This MCP is functional but far from perfect. We're releasing it in beta because:
+- It solves real problems despite its limitations
+- More users means better feedback and faster improvements
+- The MCP ecosystem needs more honest, working implementations
+
+We'd love to hear about your experience:
+- What works well?
+- What breaks or frustrates you?
+- What use cases succeed or fail?
+- How does it compare to other MCPs you've tried?
+
+Open an issue on [GitHub](https://github.com/datocms/mcp/issues) or reach out to us at [support@datocms.com](mailto:support@datocms.com).
 
 ## License
 
