@@ -8,7 +8,7 @@
 
 <!--datocms-autoinclude-header end-->
 
-## DatoCMS MCP Server
+# DatoCMS MCP
 
 ⚠️ **Beta Release**: This server is functional but has known limitations. Operations can be slow (complex tasks may take several minutes), token-intensive, and results can be unpredictable. Success rates improve with clear, precise prompts and as the LLM learns your content model. Read our [honest assessment](#limitations--known-issues) before getting started.
 
