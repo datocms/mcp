@@ -61,6 +61,16 @@ claude mcp add datocms npx @datocms/mcp@latest -e DATOCMS_API_TOKEN=your-project
 </details>
 
 <details>
+<summary>ChatGPT Codex</summary>
+
+Use the ChatGPT Codex CLI to add the DatoCMS MCP server:
+
+```bash
+codex mcp add --env DATOCMS_API_TOKEN=your-project-api-token-here datocms -- npx @datocms/mcp@latest 
+```
+</details>
+
+<details>
 <summary>Claude Desktop</summary>
 
 Follow the MCP install [guide](https://modelcontextprotocol.io/quickstart/user), use the standard config above.
