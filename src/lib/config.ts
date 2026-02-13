@@ -12,5 +12,6 @@ export const datocmsClient = process.env.DATOCMS_API_TOKEN
 	? buildClient({
 			apiToken: process.env.DATOCMS_API_TOKEN,
 			environment: process.env.DATOCMS_ENVIRONMENT,
+			baseUrl: process.env.DATOCMS_BASE_URL,
 		})
 	: undefined;
