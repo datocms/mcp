@@ -175,6 +175,7 @@ export class Workspace {
 						...process.env,
 						DATOCMS_API_TOKEN: opts.client.config.apiToken || undefined,
 						DATOCMS_ENVIRONMENT: opts.client.config.environment,
+						DATOCMS_BASE_URL: opts.client.config.baseUrl,
 					},
 				});
 
@@ -315,6 +316,7 @@ export class Workspace {
         const scriptPath = process.argv[2];
         const apiToken = process.env['DATOCMS_API_TOKEN'];
         const environment = process.env['DATOCMS_ENVIRONMENT'];
+        const baseUrl = process.env['DATOCMS_BASE_URL'];
 
         if (!scriptPath) {
           console.error(
@@ -333,7 +335,7 @@ export class Workspace {
           process.exit(2);
         }
 
-        const client = buildClient({ apiToken, environment });
+        const client = buildClient({ apiToken, environment, baseUrl });
 
         // normalize to file:// to allow dynamic import in node ESM
         const scriptUrl = scriptPath.startsWith('file://')
