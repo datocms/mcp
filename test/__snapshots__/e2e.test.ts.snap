@@ -2243,7 +2243,7 @@ exports[`MCP Server E2E Tests > Tool calls > should call resources successfully 
 ## Hosting & CI integrations
 
 - buildTriggers (Build trigger — Configuration for different build triggers. You can have different staging and production environments in order to test your site before final deploy)
-- buildEvents (Deploy activity — Represents an event occurred during the deploy process of your administrative area.)
+- buildEvents (Deploy activity — Represents an event occurred during the deploy process of a build trigger.)
 
 ## Subscription
 
