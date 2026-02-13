@@ -3,3 +3,4 @@ dxt-dist
 *.dxt
 *.mcpb
 .env.local
+node_modules
