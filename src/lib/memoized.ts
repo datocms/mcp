@@ -1,5 +1,5 @@
 /**
- * Creates a memoized version of a function that caches its result forever.
+ * Creates a memoized version of a function that caches its successful result forever.
  * The function is called once, and subsequent calls return the cached result.
  *
  * @param fn - Function to memoize (can be sync or async)
@@ -46,12 +46,19 @@ export function memoized<T>(fn: (() => Promise<T>) | (() => T)) {
 		// Detect if result is a promise
 		if (result && typeof (result as any).then === "function") {
 			isAsync = true;
-			pending = (result as Promise<T>).then((v) => {
-				value = v;
-				cached = true;
-				pending = null;
-				return v;
-			});
+			pending = (result as Promise<T>).then(
+				(v) => {
+					value = v;
+					cached = true;
+					pending = null;
+					return v;
+				},
+				(err) => {
+					// Clear pending on rejection so retries are possible
+					pending = null;
+					throw err;
+				},
+			);
 			return pending;
 		} else {
 			// Synchronous result
