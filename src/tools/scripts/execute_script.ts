@@ -1,5 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
+import {
+	environmentArgument,
+	projectArgument,
+	resolveProject,
+} from "../../lib/resolveProject.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 import { executeAndRender, validateAndRender } from "./utils.js";
 
@@ -12,6 +17,8 @@ export function register(server: McpServer) {
 			description:
 				"Validates and executes a script file against the DatoCMS API. The script will be validated for TypeScript errors before execution.",
 			inputSchema: {
+				project: projectArgument,
+				environment: environmentArgument,
 				name: z
 					.string()
 					.describe(
@@ -19,14 +26,16 @@ export function register(server: McpServer) {
 					),
 			},
 		},
-		async ({ name }) => {
-			const validationErrors = await validateAndRender(name);
+		async ({ project, environment, name }) => {
+			const { client } = await resolveProject(project, environment);
+
+			const validationErrors = await validateAndRender(client, name);
 
 			if (validationErrors) {
 				return validationErrors;
 			}
 
-			return executeAndRender(name);
+			return executeAndRender(client, name);
 		},
 	);
 }

@@ -12,16 +12,17 @@
 
 ⚠️ **Beta Release**: This server is functional but has known limitations. Operations can be slow (complex tasks may take several minutes), token-intensive, and results can be unpredictable. Success rates improve with clear, precise prompts and as the LLM learns your content model. Read our [honest assessment](#limitations--known-issues) before getting started.
 
-A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). Unlike typical MCPs that expose 100+ raw API endpoints, this server uses a **layered approach** with just 10 carefully designed tools that guide LLMs through discovery, planning, and execution stages.
+A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). Unlike typical MCPs that expose 100+ raw API endpoints, this server uses a **layered approach** with carefully designed tools that guide LLMs through discovery, planning, and execution stages.
 
 ### Key Features
 
-- **Layered tool design**: 10 tools instead of 150+ API endpoints. Guides LLMs through discovery → planning → execution stages, reducing malformed calls and improving success rates.
+- **OAuth authentication**: Log in once via browser, access all your DatoCMS projects. No API tokens to manage.
+- **Multi-project support**: Work across multiple projects in a single session. Each tool accepts a project identifier (site ID, subdomain, URL, or custom domain).
+- **Layered tool design**: Guides LLMs through discovery → planning → execution stages, reducing malformed calls and improving success rates.
 - **Script-based approach**: Write and execute complete TypeScript scripts that batch multiple operations together. Validated before execution with incremental editing support for faster iteration.
 - **Documentation-aware**: Retrieves detailed method documentation and concrete examples (yes, this consumes tokens, but it's necessary for the LLM to succeed).
 - **Schema introspection**: Access detailed information about your project's content models, fields, and relationships.
 - **Safe execution environment**: Built-in validation and guardrails prevent API misuse and malicious code execution.
-- **Optional project access**: Use with or without API token for documentation vs. execution capabilities.
 
 ### Requirements
 - Node.js 18 or newer
@@ -31,7 +32,7 @@ A local Model Context Protocol (MCP) server that provides AI assistants with too
 
 First, install the DatoCMS MCP server with your client.
 
-**Standard config** works in most of the tools:
+**Standard config** works in most tools:
 
 ```json
 {
@@ -41,14 +42,13 @@ First, install the DatoCMS MCP server with your client.
       "args": [
         "-y",
         "@datocms/mcp@latest"
-      ],
-      "env": {
-        "DATOCMS_API_TOKEN": "your-project-api-token-here"
-      }
+      ]
     }
   }
 }
 ```
+
+Once the server is running, use the `datocms_login` tool to authenticate via browser. Your credentials are saved locally at `~/.config/datocms-mcp/credentials.json`.
 
 <details>
 <summary>Claude Code</summary>
@@ -56,7 +56,7 @@ First, install the DatoCMS MCP server with your client.
 Use the Claude Code CLI to add the DatoCMS MCP server:
 
 ```bash
-claude mcp add datocms npx @datocms/mcp@latest -e DATOCMS_API_TOKEN=your-project-api-token-here
+claude mcp add datocms npx @datocms/mcp@latest
 ```
 </details>
 
@@ -66,7 +66,7 @@ claude mcp add datocms npx @datocms/mcp@latest -e DATOCMS_API_TOKEN=your-project
 Use the ChatGPT Codex CLI to add the DatoCMS MCP server:
 
 ```bash
-codex mcp add --env DATOCMS_API_TOKEN=your-project-api-token-here datocms -- npx @datocms/mcp@latest 
+codex mcp add datocms -- npx @datocms/mcp@latest
 ```
 </details>
 
@@ -82,7 +82,7 @@ Follow the MCP install [guide](https://modelcontextprotocol.io/quickstart/user),
 
 #### Click the button to install:
 
-[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=DatoCMS&config=eyJjb21tYW5kIjoibnB4IC15IEBkYXRvY21zL21jcEBsYXRlc3QiLCJlbnYiOnsiREFUT0NNU19BUElfVE9LRU4iOiIifSwiYXJncyI6W119)
+[![Install MCP Server](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=DatoCMS&config=eyJjb21tYW5kIjoibnB4IC15IEBkYXRvY21zL21jcEBsYXRlc3QiLCJhcmdzIjpbXX0)
 
 #### Or install manually:
 
@@ -93,9 +93,6 @@ Go to `Cursor Settings` -> `Tools & Integrations` -> `New MCP Server`, then past
   "mcpServers": {
     "DatoCMS": {
       "command": "npx -y @datocms/mcp@latest",
-      "env": {
-        "DATOCMS_API_TOKEN": ""
-      },
       "args": []
     }
   }
@@ -123,7 +120,7 @@ Follow the MCP install [guide](https://code.visualstudio.com/docs/copilot/chat/m
 
 ```bash
 # For VS Code
-code --add-mcp '{"name":"datocms","command":"npx","args":["-y", "@datocms/mcp@latest"], "env": {"DATOCMS_API_TOKEN": ""}}'
+code --add-mcp '{"name":"datocms","command":"npx","args":["-y", "@datocms/mcp@latest"]}'
 ```
 
 After installation, the DatoCMS MCP server will be available for use with your GitHub Copilot agent in VS Code.
@@ -138,39 +135,10 @@ Follow Windsurf MCP [documentation](https://docs.windsurf.com/windsurf/cascade/m
 
 ### Configuration
 
-The DatoCMS MCP server supports the following environment variables:
+The DatoCMS MCP server supports the following optional environment variables:
 
-- `DATOCMS_API_TOKEN`: Your DatoCMS API token for a specific project. When provided, enables full access including schema introspection, API execution, and script execution. Without this token, only API documentation and exploration tools are available, along with the ability to create and validate scripts (but not execute them).
-- `DATOCMS_ENVIRONMENT`: Specifies which DatoCMS environment the MCP server should interact with. If not set, the server automatically uses the project’s primary environment.
-- `EXECUTION_TIMEOUT_SECONDS` (optional): Script execution timeout in seconds. Defaults to 60 seconds.
-- `MAX_OUTPUT_BYTES` (optional): Maximum output size in bytes for all executions. Defaults to 2048 bytes (2 KB).
-
-**With API token** (full project access):
-```js
-{
-  "mcpServers": {
-    "datocms": {
-      "command": "npx",
-      "args": ["-y", "@datocms/mcp@latest"],
-      "env": {
-        "DATOCMS_API_TOKEN": ""
-      }
-    }
-  }
-}
-```
-
-**Without API token** (documentation only):
-```js
-{
-  "mcpServers": {
-    "datocms": {
-      "command": "npx",
-      "args": ["-y", "@datocms/mcp@latest"]
-    }
-  }
-}
-```
+- `EXECUTION_TIMEOUT_SECONDS`: Script execution timeout in seconds. Defaults to 60 seconds.
+- `MAX_OUTPUT_BYTES`: Maximum output size in bytes for all executions. Defaults to 2048 bytes (2 KB).
 
 ### Design Philosophy
 
@@ -194,6 +162,12 @@ Additionally, our **script-based approach** lets LLMs write complete TypeScript 
 
 The DatoCMS MCP server provides the following tools:
 
+#### Authentication Tools
+
+- **datocms_login**: Authenticate with DatoCMS via OAuth. Opens a browser window for authorization.
+- **datocms_logout**: Remove saved credentials from the local machine.
+- **datocms_whoami**: Show the currently authenticated DatoCMS account.
+
 #### Documentation & Exploration Tools
 
 - **resources**: List all available DatoCMS API resources
@@ -201,11 +175,11 @@ The DatoCMS MCP server provides the following tools:
 - **resource_action**: Show available actions for a resource
 - **resource_action_method**: Get detailed method documentation with examples
 
-#### Schema Tools (require an API token)
+#### Schema Tools
 
 - **schema_info**: Get detailed information about DatoCMS models and modular blocks, including fields, fieldsets, nested blocks, and relationships
 
-#### API Execution Tools (require an API token)
+#### API Execution Tools
 
 - **resource_action_readonly_method_execute**: Execute read-only operations (e.g., list, find, raw queries)
 - **resource_action_destructive_method_execute**: Execute write operations (e.g., create, update, destroy)
@@ -215,7 +189,7 @@ The DatoCMS MCP server provides the following tools:
 - **create_script**: Create and store TypeScript scripts that can interact with the DatoCMS API
 - **view_script**: View the content of a previously created script
 - **update_script**: Update an existing script
-- **execute_script**: Run a script against your DatoCMS project (requires an API token)
+- **execute_script**: Run a script against your DatoCMS project
 
 ### Limitations & Known Issues
 

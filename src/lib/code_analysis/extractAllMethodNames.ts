@@ -44,7 +44,7 @@ export function extractAllMethodNames(
 		resourceProperty = declaration;
 	}
 
-	if (!resourceProperty || !resourceProperty.type) {
+	if (!resourceProperty?.type) {
 		return [];
 	}
 

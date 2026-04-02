@@ -3,10 +3,13 @@ import { SchemaRepository } from "@datocms/cma-client-node";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { encode } from "@toon-format/toon";
 import z from "zod";
-import { datocmsClient } from "../../lib/config.js";
 import { fuzzyScore } from "../../lib/fuzzyScore.js";
-import { invariant } from "../../lib/invariant.js";
 import { pre, render } from "../../lib/markdown.js";
+import {
+	environmentArgument,
+	projectArgument,
+	resolveProject,
+} from "../../lib/resolveProject.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 type SchemaInfoResult = {
@@ -26,6 +29,8 @@ export function register(server: McpServer) {
 			description:
 				"Retrieves detailed information about DatoCMS models and modular blocks, including fields, fieldsets, nested blocks, and relationships. Returns JSON data in a flat structure.",
 			inputSchema: {
+				project: projectArgument,
+				environment: environmentArgument,
 				filter_by_name: z
 					.string()
 					.optional()
@@ -74,9 +79,9 @@ export function register(server: McpServer) {
 			},
 		},
 		async (args) => {
-			invariant(datocmsClient);
+			const { client } = await resolveProject(args.project, args.environment);
 
-			const repo = new SchemaRepository(datocmsClient);
+			const repo = new SchemaRepository(client);
 
 			// Pre-fetch everything for efficiency
 			await repo.prefetchAllModelsAndFields();
