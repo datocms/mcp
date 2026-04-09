@@ -9,7 +9,7 @@ import open from "open";
 
 const CLIENT_ID = "Uoo1A5lsXUO14JhtaSrIbCL2nBMgYmQxAyNnDD8wzG0";
 const DEFAULT_OAUTH_BASE_URL = "https://oauth.datocms.com";
-const REDIRECT_PORT = 7651;
+const REDIRECT_PORT = 7652;
 const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`;
 const SCOPES = "read_account read_sites read_organizations";
 
@@ -163,21 +163,31 @@ function tryStartServer(
 	});
 }
 
-export async function performOAuthLogin(
-	oauthBaseUrl?: string,
-): Promise<string> {
-	const baseUrl = oauthBaseUrl || DEFAULT_OAUTH_BASE_URL;
+export async function revokeOAuthToken(token: string): Promise<void> {
+	await fetch(`${DEFAULT_OAUTH_BASE_URL}/oauth/revoke`, {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: new URLSearchParams({
+			client_id: CLIENT_ID,
+			token,
+		}).toString(),
+	});
+}
+
+export type OAuthLoginResult =
+	| { type: "success"; token: string }
+	| { type: "oob_required"; authorizeUrl: string; state: string; codeVerifier: string };
+
+export async function performOAuthLogin(): Promise<OAuthLoginResult> {
 	const state = randomBytes(16).toString("hex");
 	const codeVerifier = generateCodeVerifier();
 	const codeChallenge = deriveCodeChallenge(codeVerifier);
-	const authorizeUrl = buildAuthorizeUrl(state, codeChallenge, baseUrl);
+	const authorizeUrl = buildAuthorizeUrl(state, codeChallenge, DEFAULT_OAUTH_BASE_URL);
 
-	const serverResult = await tryStartServer(state, codeVerifier, baseUrl);
+	const serverResult = await tryStartServer(state, codeVerifier, DEFAULT_OAUTH_BASE_URL);
 
 	if (!serverResult) {
-		throw new Error(
-			`Could not start local server on port ${REDIRECT_PORT}. Is something else using that port?\n\nAuthorize URL: ${authorizeUrl}`,
-		);
+		return { type: "oob_required", authorizeUrl, state, codeVerifier };
 	}
 
 	await open(authorizeUrl);
@@ -185,8 +195,30 @@ export async function performOAuthLogin(
 	const token = await serverResult.waitForToken();
 
 	if (!token) {
-		throw new Error("Authentication failed — no token received");
+		throw new Error(
+			"Authentication failed — no token received. The user may have denied the authorization request or closed the browser window before completing the login.",
+		);
 	}
 
-	return token;
+	return { type: "success", token };
+}
+
+export async function exchangeOAuthCallbackUrl(
+	callbackUrl: string,
+	expectedState: string,
+	codeVerifier: string,
+): Promise<string> {
+	const parsed = new URL(callbackUrl);
+	const code = parsed.searchParams.get("code");
+	const returnedState = parsed.searchParams.get("state");
+
+	if (returnedState !== expectedState) {
+		throw new Error("Invalid state parameter in the pasted URL.");
+	}
+
+	if (!code) {
+		throw new Error("No authorization code found in the pasted URL.");
+	}
+
+	return exchangeCodeForToken(code, codeVerifier, DEFAULT_OAUTH_BASE_URL);
 }

@@ -1,5 +1,8 @@
 import { buildClient, type Client } from "@datocms/cma-client-node";
-import { buildClient as buildDashboardClient } from "@datocms/dashboard-client";
+import {
+	ApiError as DashboardApiError,
+	buildClient as buildDashboardClient,
+} from "@datocms/dashboard-client";
 import z from "zod";
 import { readOAuthCredentials } from "./credentials.js";
 
@@ -105,21 +108,34 @@ async function resolveSite(project: string): Promise<ResolvedSite> {
 		apiToken: oauthCreds.apiToken,
 	};
 
-	// Try finding by ID first (fast path)
-	if (/^\d+$/.test(identifier)) {
-		const result = await tryFindSiteById(baseDashboardOpts, identifier);
+	try {
+		// Try finding by ID first (fast path)
+		if (/^\d+$/.test(identifier)) {
+			const result = await tryFindSiteById(baseDashboardOpts, identifier);
+			if (result) {
+				siteCache.set(identifier, result);
+				return result;
+			}
+		}
+
+		// Search across personal account and all organizations
+		const result = await searchSiteAcrossScopes(baseDashboardOpts, identifier);
+
 		if (result) {
 			siteCache.set(identifier, result);
 			return result;
 		}
-	}
+	} catch (error) {
+		if (
+			error instanceof DashboardApiError &&
+			error.findError("INVALID_AUTHORIZATION_HEADER")
+		) {
+			throw new Error(
+				'Your OAuth token is invalid or has been revoked. Use the "datocms_login" tool to re-authenticate.',
+			);
+		}
 
-	// Search across personal account and all organizations
-	const result = await searchSiteAcrossScopes(baseDashboardOpts, identifier);
-
-	if (result) {
-		siteCache.set(identifier, result);
-		return result;
+		throw error;
 	}
 
 	throw new Error(
