@@ -1,19 +1,20 @@
-import {
-	datocmsClient,
-	MAX_OUTPUT_BYTES,
-	SCRIPT_TIMEOUT_MS,
-} from "../../lib/config.js";
-import { invariant } from "../../lib/invariant.js";
+import type { Client } from "@datocms/cma-client-node";
+import { MAX_OUTPUT_BYTES, SCRIPT_TIMEOUT_MS } from "../../lib/config.js";
 import { code, h1, h2, p, pre, render } from "../../lib/markdown.js";
+import { resolveProject } from "../../lib/resolveProject.js";
 import { getScript } from "../../lib/scripts/storage.js";
 import { getWorkspace } from "../../lib/workspace/index.js";
 
 export async function validateExecuteAndRender(
+	project: string,
+	environment: string | undefined,
 	scriptName: string,
 	execute: boolean | undefined,
 	actionVerb: string,
 ): Promise<string> {
-	const validationErrors = await validateAndRender(scriptName);
+	const { client } = await resolveProject(project, environment);
+
+	const validationErrors = await validateAndRender(client, scriptName);
 
 	if (validationErrors) {
 		return render(
@@ -25,6 +26,7 @@ export async function validateExecuteAndRender(
 	// Execute the script if requested
 	if (execute) {
 		return executeAndRender(
+			client,
 			scriptName,
 			`Script ${actionVerb} and executed successfully`,
 			`Script ${actionVerb}, but execution`,
@@ -42,12 +44,10 @@ export async function validateExecuteAndRender(
 	);
 }
 
-export async function validateAndRender(scriptName: string) {
-	invariant(datocmsClient);
-
+export async function validateAndRender(client: Client, scriptName: string) {
 	const script = getScript(scriptName);
 	const wm = await getWorkspace();
-	const tsValidation = await wm.validateScript(script, datocmsClient);
+	const tsValidation = await wm.validateScript(script, client);
 
 	if (!tsValidation.passed) {
 		return render(
@@ -65,17 +65,16 @@ export async function validateAndRender(scriptName: string) {
 }
 
 export async function executeAndRender(
+	client: Client,
 	scriptName: string,
 	success: string = "Script executed successfully",
 	failurePrefix: string = "Script execution",
 ): Promise<string> {
-	invariant(datocmsClient);
-
 	const script = getScript(scriptName);
 	const wm = await getWorkspace();
 
 	const result = await wm.executeScript(script, {
-		client: datocmsClient,
+		client,
 		timeoutMs: SCRIPT_TIMEOUT_MS,
 		maxStdoutBytes: MAX_OUTPUT_BYTES,
 	});

@@ -1,6 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 import { code, h1, h2, li, ol, p, render } from "../../lib/markdown.js";
+import {
+	environmentArgument,
+	projectArgument,
+} from "../../lib/resolveProject.js";
 import { updateScript } from "../../lib/scripts/storage.js";
 import { DEFAULT_ALLOWED_PACKAGES } from "../../lib/scripts/validation.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
@@ -51,6 +55,8 @@ export function register(server: McpServer) {
 				),
 			),
 			inputSchema: {
+				project: projectArgument,
+				environment: environmentArgument,
 				name: z
 					.string()
 					.describe(
@@ -81,7 +87,7 @@ export function register(server: McpServer) {
 					),
 			},
 		},
-		async ({ name, replacements, execute }) => {
+		async ({ project, environment, name, replacements, execute }) => {
 			const validation = updateScript(
 				name,
 				replacements.map((r) => ({ oldStr: r.old_str, newStr: r.new_str })),
@@ -107,7 +113,13 @@ export function register(server: McpServer) {
 				);
 			}
 
-			return await validateExecuteAndRender(name, execute, "updated");
+			return await validateExecuteAndRender(
+				project,
+				environment,
+				name,
+				execute,
+				"updated",
+			);
 		},
 	);
 }

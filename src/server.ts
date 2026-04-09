@@ -1,5 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { datocmsClient } from "./lib/config.js";
+import { register as registerAuth } from "./tools/auth/index.js";
 import { register as registerResource } from "./tools/resource/index.js";
 import { register as registerResourceAction } from "./tools/resource_action/index.js";
 import { register as registerResourceActionMethod } from "./tools/resource_action_method/index.js";
@@ -17,19 +17,17 @@ export function createServer() {
 		version: "1.0.0",
 	});
 
+	registerAuth(server);
 	registerResources(server);
 	registerResource(server);
 	registerResourceAction(server);
 	registerResourceActionMethod(server);
-
-	if (datocmsClient) {
-		registerSchemaInfo(server);
-		registerResourceActionMethodExecute(server);
-		registerCreateScript(server);
-		registerUpdateScript(server);
-		registerViewScript(server);
-		registerExecuteScript(server);
-	}
+	registerSchemaInfo(server);
+	registerResourceActionMethodExecute(server);
+	registerCreateScript(server);
+	registerUpdateScript(server);
+	registerViewScript(server);
+	registerExecuteScript(server);
 
 	return server;
 }

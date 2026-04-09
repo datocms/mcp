@@ -91,7 +91,7 @@ export function extractMethodSignature(
 		resourceProperty = declaration;
 	}
 
-	if (!resourceProperty || !resourceProperty.type) {
+	if (!resourceProperty?.type) {
 		return undefined;
 	}
 

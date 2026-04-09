@@ -3,9 +3,14 @@ import jq from "node-jq";
 import { serializeError } from "serialize-error";
 import z from "zod";
 import { extractResourcesEndpointMethods } from "../../lib/code_analysis/extractEndpointMethods.js";
-import { datocmsClient, MAX_OUTPUT_BYTES } from "../../lib/config.js";
+import { MAX_OUTPUT_BYTES } from "../../lib/config.js";
 import { invariant } from "../../lib/invariant.js";
 import { h1, p, pre, render } from "../../lib/markdown.js";
+import {
+	environmentArgument,
+	projectArgument,
+	resolveProject,
+} from "../../lib/resolveProject.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
 import {
 	findResourcesEndpointByRel,
@@ -41,6 +46,8 @@ export function register(server: McpServer) {
 					),
 				),
 				inputSchema: {
+					project: projectArgument,
+					environment: environmentArgument,
 					resource: z.string().describe("The resource (ie. items)"),
 					action: z
 						.string()
@@ -63,13 +70,18 @@ export function register(server: McpServer) {
 				},
 			},
 			async ({
+				project,
+				environment,
 				resource: namespace,
 				action: rel,
 				method,
 				arguments: args,
 				jqSelector,
 			}) => {
-				invariant(datocmsClient);
+				const { client: datocmsClient } = await resolveProject(
+					project,
+					environment,
+				);
 
 				const jsClientSchema = await fetchResourcesSchema();
 

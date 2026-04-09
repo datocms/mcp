@@ -16,6 +16,10 @@ import {
 	render,
 	ul,
 } from "../../lib/markdown.js";
+import {
+	environmentArgument,
+	projectArgument,
+} from "../../lib/resolveProject.js";
 import { createScript } from "../../lib/scripts/storage.js";
 import { DEFAULT_ALLOWED_PACKAGES } from "../../lib/scripts/validation.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
@@ -185,6 +189,8 @@ export function register(server: McpServer) {
 				),
 			),
 			inputSchema: {
+				project: projectArgument,
+				environment: environmentArgument,
 				name: z
 					.string()
 					.describe(
@@ -203,7 +209,7 @@ export function register(server: McpServer) {
 					),
 			},
 		},
-		async ({ name, content, execute }) => {
+		async ({ project, environment, name, content, execute }) => {
 			const validation = createScript(name, content);
 
 			// If basic validation failed, report those errors
@@ -226,7 +232,13 @@ export function register(server: McpServer) {
 				);
 			}
 
-			return await validateExecuteAndRender(name, execute, "created");
+			return await validateExecuteAndRender(
+				project,
+				environment,
+				name,
+				execute,
+				"created",
+			);
 		},
 	);
 }
