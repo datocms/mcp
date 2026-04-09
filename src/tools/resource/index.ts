@@ -1,14 +1,21 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
-import { collapseDetails } from "../../lib/hyperschema/collapseDetails.js";
+import {
+	collapseDetails,
+	code,
+	findResourcesEntityByNamespace,
+	h1,
+	li,
+	p,
+	render,
+	ul,
+} from "@datocms/rest-api-reference";
 import {
 	fetchHyperschema,
 	findHyperschemaEntity,
 } from "../../lib/hyperschema/utils.js";
 import { invariant } from "../../lib/invariant.js";
-import { code, h1, li, p, render, ul } from "../../lib/markdown.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
-import { findResourcesEntityByNamespace } from "../../lib/resources/finders.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {

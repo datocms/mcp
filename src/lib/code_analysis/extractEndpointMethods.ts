@@ -1,4 +1,4 @@
-import type { ResourcesEndpoint } from "../resources/types.js";
+import type { ResourcesEndpoint } from "@datocms/rest-api-reference";
 import { extractAllMethodNames } from "./extractAllMethodNames.js";
 import {
 	extractMethodSignature,

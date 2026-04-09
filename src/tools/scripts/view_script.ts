@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
-import { code, h2, li, p, pre, render, ul } from "../../lib/markdown.js";
+import { code, h2, li, p, pre, render, ul } from "@datocms/rest-api-reference";
 import { getScript } from "../../lib/scripts/storage.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 

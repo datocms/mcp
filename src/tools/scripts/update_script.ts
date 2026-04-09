@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
-import { code, h1, h2, li, ol, p, render } from "../../lib/markdown.js";
+import { code, h1, h2, li, ol, p, render } from "@datocms/rest-api-reference";
 import {
 	environmentArgument,
 	projectArgument,

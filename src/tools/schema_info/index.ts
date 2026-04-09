@@ -4,7 +4,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { encode } from "@toon-format/toon";
 import z from "zod";
 import { fuzzyScore } from "../../lib/fuzzyScore.js";
-import { pre, render } from "../../lib/markdown.js";
+import { pre, render } from "@datocms/rest-api-reference";
 import {
 	environmentArgument,
 	projectArgument,

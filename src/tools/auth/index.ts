@@ -7,7 +7,7 @@ import {
 	readOAuthCredentials,
 	writeOAuthCredentials,
 } from "../../lib/credentials.js";
-import { h1, p, render } from "../../lib/markdown.js";
+import { h1, p, render } from "@datocms/rest-api-reference";
 import {
 	exchangeOAuthCallbackUrl,
 	performOAuthLogin,

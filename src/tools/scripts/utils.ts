@@ -1,6 +1,6 @@
 import type { Client } from "@datocms/cma-client-node";
 import { MAX_OUTPUT_BYTES, SCRIPT_TIMEOUT_MS } from "../../lib/config.js";
-import { code, h1, h2, p, pre, render } from "../../lib/markdown.js";
+import { code, h1, h2, p, pre, render } from "@datocms/rest-api-reference";
 import { resolveProject } from "../../lib/resolveProject.js";
 import { getScript } from "../../lib/scripts/storage.js";
 import { getWorkspace } from "../../lib/workspace/index.js";

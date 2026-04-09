@@ -282,6 +282,7 @@ export default async function (client: Client) {
 			await client.callTool({
 				name: "create_script",
 				arguments: {
+					project: "dummy",
 					name: testScriptName,
 					content: testScriptContent,
 				},

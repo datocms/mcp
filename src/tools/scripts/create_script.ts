@@ -15,7 +15,7 @@ import {
 	pre,
 	render,
 	ul,
-} from "../../lib/markdown.js";
+} from "@datocms/rest-api-reference";
 import {
 	environmentArgument,
 	projectArgument,

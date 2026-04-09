@@ -11,7 +11,7 @@ import type {
 } from "@modelcontextprotocol/sdk/types.js";
 import { serializeError } from "serialize-error";
 import type { ZodRawShape, ZodTypeAny, z } from "zod";
-import { h1, pre, render } from "./markdown.js";
+import { h1, pre, render } from "@datocms/rest-api-reference";
 
 type SimplifiedToolCallback<Args extends undefined | ZodRawShape = undefined> =
 	Args extends ZodRawShape

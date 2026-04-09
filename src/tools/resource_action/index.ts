@@ -1,18 +1,20 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
 import { extractResourcesEndpointMethods } from "../../lib/code_analysis/extractEndpointMethods.js";
-import { buildHyperschemaLinkDescription } from "../../lib/hyperschema/buildHyperschemaLinkDescription.js";
+import {
+	buildLinkDescription as buildHyperschemaLinkDescription,
+	findResourcesEndpointByRel,
+	findResourcesEntityByNamespace,
+	h1,
+	pre,
+	render,
+} from "@datocms/rest-api-reference";
 import {
 	fetchHyperschema,
 	findHyperschemaLink,
 } from "../../lib/hyperschema/utils.js";
 import { invariant } from "../../lib/invariant.js";
-import { h1, pre, render } from "../../lib/markdown.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
-import {
-	findResourcesEndpointByRel,
-	findResourcesEntityByNamespace,
-} from "../../lib/resources/finders.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {

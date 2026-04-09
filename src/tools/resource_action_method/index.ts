@@ -7,7 +7,7 @@ import {
 import { extractTypeDependencies } from "../../lib/code_analysis/extractTypeDependencies.js";
 import { getCmaClientProgram } from "../../lib/code_analysis/getCmaClientProgram.js";
 import { invariant } from "../../lib/invariant.js";
-import { pre, render } from "../../lib/markdown.js";
+import { pre, render } from "@datocms/rest-api-reference";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 /**

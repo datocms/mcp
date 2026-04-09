@@ -5,9 +5,18 @@ import {
 	findHyperschemaEntity,
 } from "../../lib/hyperschema/utils.js";
 import { isDefined } from "../../lib/isDefined.js";
-import { code, h1, h2, li, p, pre, render, ul } from "../../lib/markdown.js";
+import {
+	code,
+	findResourcesEntityByJsonApiType,
+	h1,
+	h2,
+	li,
+	p,
+	pre,
+	render,
+	ul,
+} from "@datocms/rest-api-reference";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
-import { findResourcesEntityByJsonApiType } from "../../lib/resources/finders.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {

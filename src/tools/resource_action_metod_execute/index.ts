@@ -5,17 +5,20 @@ import z from "zod";
 import { extractResourcesEndpointMethods } from "../../lib/code_analysis/extractEndpointMethods.js";
 import { MAX_OUTPUT_BYTES } from "../../lib/config.js";
 import { invariant } from "../../lib/invariant.js";
-import { h1, p, pre, render } from "../../lib/markdown.js";
+import {
+	findResourcesEndpointByRel,
+	findResourcesEntityByNamespace,
+	h1,
+	p,
+	pre,
+	render,
+} from "@datocms/rest-api-reference";
 import {
 	environmentArgument,
 	projectArgument,
 	resolveProject,
 } from "../../lib/resolveProject.js";
 import { fetchResourcesSchema } from "../../lib/resources/fetchResourcesSchema.js";
-import {
-	findResourcesEndpointByRel,
-	findResourcesEntityByNamespace,
-} from "../../lib/resources/finders.js";
 import { simplifiedRegisterTool } from "../../lib/simplifiedRegisterTool.js";
 
 export function register(server: McpServer) {
