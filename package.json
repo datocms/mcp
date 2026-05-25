@@ -16,7 +16,7 @@
 	},
 	"author": "Stefano Verna (s.verna@datocms.com)",
 	"license": "MIT",
-	"description": "Model Context Protocol server for DatoCMS",
+	"description": "DEPRECATED: Use the remote MCP server at https://mcp.datocms.com instead. See https://www.datocms.com/docs/mcp-server",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/datocms/mcp.git"

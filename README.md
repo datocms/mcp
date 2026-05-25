@@ -10,7 +10,33 @@
 
 # DatoCMS MCP
 
-⚠️ **Beta Release**: This server is functional but has known limitations. Operations can be slow (complex tasks may take several minutes), token-intensive, and results can be unpredictable. Success rates improve with clear, precise prompts and as the LLM learns your content model. Read our [honest assessment](#limitations--known-issues) before getting started.
+> [!WARNING]
+> **This local MCP server (`@datocms/mcp`) has been deprecated** in favor of the new, improved remote MCP server at [mcp.datocms.com](https://www.datocms.com/docs/mcp-server).
+>
+> The remote server offers streamable HTTP transport, OAuth authentication, regular updates, and zero local setup — no Node.js required.
+
+## Use mcp.datocms.com
+
+Update your MCP client configuration to point at the remote server:
+
+```json
+{
+  "mcpServers": {
+    "DatoCMS": {
+      "type": "http",
+      "url": "https://mcp.datocms.com"
+    }
+  }
+}
+```
+
+See the [official documentation](https://www.datocms.com/docs/mcp-server) for setup instructions across Claude Code, Cursor, VS Code, Windsurf, and other clients.
+
+---
+
+The rest of this README is preserved for historical reference only.
+
+---
 
 A local Model Context Protocol (MCP) server that provides AI assistants with tools to interact with the [DatoCMS Content Management API](https://www.datocms.com/docs/content-management-api). Unlike typical MCPs that expose 100+ raw API endpoints, this server uses a **layered approach** with carefully designed tools that guide LLMs through discovery, planning, and execution stages.
 
